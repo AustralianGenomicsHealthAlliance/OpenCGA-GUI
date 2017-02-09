@@ -1,4 +1,4 @@
-package opencga.gui
+package agha.opencga.gui
 
 class UrlMappings {
 

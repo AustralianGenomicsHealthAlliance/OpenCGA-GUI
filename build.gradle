@@ -54,6 +54,16 @@ dependencies {
     testCompile "org.grails.plugins:geb"
     testRuntime "org.seleniumhq.selenium:selenium-htmlunit-driver:2.47.1"
     testRuntime "net.sourceforge.htmlunit:htmlunit:2.18"
+
+    // Rest client
+    compile 'org.grails:grails-datastore-rest-client:6.0.6.RELEASE'
+
+    // HTS JDK
+    compile 'com.github.samtools:htsjdk:2.8.1'
+
+    // Spring security
+    //compile 'org.grails.plugins:spring-security-core:3.1.1'
+
 }
 
 bootRun {
@@ -61,6 +71,6 @@ bootRun {
 }
 
 assets {
-    minifyJs = true
+    minifyJs = false
     minifyCss = true
 }

@@ -1,8 +1,10 @@
 ---
+server:
+    port: 9090
 grails:
     profile: web
     codegen:
-        defaultPackage: opencga.gui
+        defaultPackage: agha.opencga.gui
     spring:
         transactionManagement:
             proxies: false
@@ -23,6 +25,10 @@ endpoints:
     enabled: false
     jmx:
         enabled: true
+
+---
+opencga.url: "http://localhost:8080/opencga-1.0.0-rc3"
+opencga.rest.url: "http://localhost:8080/opencga-1.0.0-rc3/webservices/rest/v1"
 
 ---
 grails:

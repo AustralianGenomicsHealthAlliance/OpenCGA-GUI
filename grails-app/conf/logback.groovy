@@ -1,3 +1,4 @@
+import ch.qos.logback.classic.encoder.PatternLayoutEncoder
 import grails.util.BuildSettings
 import grails.util.Environment
 import org.springframework.boot.logging.logback.ColorConverter
@@ -32,8 +33,10 @@ if (Environment.isDevelopmentMode() && targetDir != null) {
         }
     }
     logger("StackTrace", ERROR, ['FULL_STACKTRACE'], false)
-    root(ERROR, ['STDOUT', 'FULL_STACKTRACE'])
+    logger("agha", INFO, ['STDOUT'])
+    root(ERROR, ['FULL_STACKTRACE'])
 }
 else {
-    root(ERROR, ['STDOUT'])
+    logger("agha", INFO, ['STDOUT'])
+    root(ERROR, [])
 }
