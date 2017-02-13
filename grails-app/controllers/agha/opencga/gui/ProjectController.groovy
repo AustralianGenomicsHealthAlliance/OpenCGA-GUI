@@ -1,22 +1,28 @@
 package agha.opencga.gui
 
+import grails.plugin.springsecurity.SpringSecurityService
+import grails.plugin.springsecurity.annotation.Secured
 import org.apache.log4j.Logger
 
+/**
+ * Controller for display flagships
+ */
+@Secured(value=["IS_AUTHENTICATED_FULLY"])
 class ProjectController {
 
     Logger logger = Logger.getLogger(ProjectController.class)
 
     OpenCGAService openCGAService
 
-
-
     def index() {
 
-        String sessionId = openCGAService.login('hongyu', 'agha')
+        def(user, password) = openCGAService.userPassword()
+
+        String sessionId = openCGAService.login(user.username, password)
 
         logger.info('sessionId='+sessionId)
 
-        List projects = openCGAService.accessibleUserProjects(sessionId, 'hongyu')
+        List projects = openCGAService.accessibleUserProjects(sessionId, user.username)
 
         [projects: projects]
     }
@@ -26,11 +32,11 @@ class ProjectController {
 
         Integer projectId = params.id?.toInteger()
 
-        String sessionId = openCGAService.login('hongyu', 'agha')
+        def(user, password) = openCGAService.userPassword()
 
-        Map projectMap = openCGAService.mapAccessibleProjects(sessionId, 'hongyu')
+        String sessionId = openCGAService.login(user.username, password)
 
-        logger.info("projectMap="+projectMap)
+        Map projectMap = openCGAService.mapAccessibleProjects(sessionId, user.username)
 
         def project = projectMap.get(projectId)
 

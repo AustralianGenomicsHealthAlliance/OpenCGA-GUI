@@ -1,6 +1,7 @@
 package agha.opencga.gui
 
 import grails.converters.JSON
+import grails.plugin.springsecurity.SpringSecurityService
 import grails.plugins.rest.client.RestBuilder
 import grails.plugins.rest.client.RestResponse
 import grails.transaction.Transactional
@@ -21,7 +22,18 @@ class OpenCGAService {
 
     Logger logger = Logger.getLogger(OpenCGAService.class)
     def grailsApplication
+    SpringSecurityService springSecurityService
 
+    /**
+     * Get the current user and default password
+     * @return
+     */
+    def userPassword() {
+        User user = springSecurityService.currentUser
+        String password = grailsApplication.config.opencga.password
+
+        return [user, password]
+    }
 
     /**
      * Build the URL for the openCGA rest services using the provided suffix
@@ -63,6 +75,16 @@ class OpenCGAService {
         String sessionId = resp.json.response.get(0).result.get(0).sessionId
         logger.info('sessionId: '+sessionId)
         return sessionId
+    }
+
+    /**
+     * Login the AGHA user
+     * @return
+     */
+    public String loginAgha() {
+        String username = grailsApplication.config.opencga.agha.user
+        String password = grailsApplication.config.opencga.password
+        return login(username, password)
     }
 
     /**
@@ -152,16 +174,19 @@ class OpenCGAService {
 
         List projects = []
 
-        def jsonOwnedProjects = userProjects(sessionId, user, false)
+        // THE ORDER HERE IS VERY IMPORTANT WHEN BUILDING A MAP OF PROJECTS AS THE ACCESSIBLE STUDIES WILL CHANGE
+        // PROJECTS THAT ARE BOTH SHARED AND OWNED
         def jsonSharedProjects = userProjects(sessionId, user, true)
+        jsonSharedProjects.response.get(0).result.each { project ->
+            projects << project
+        }
 
+
+        def jsonOwnedProjects = userProjects(sessionId, user, false)
         jsonOwnedProjects.response.get(0).result.each { project ->
             projects << project
         }
 
-        jsonSharedProjects.response.get(0).result.each { project ->
-            projects << project
-        }
 
         return projects
     }

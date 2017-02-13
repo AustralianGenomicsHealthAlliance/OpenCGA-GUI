@@ -1,5 +1,6 @@
 package agha.opencga.gui
 
+import grails.plugin.springsecurity.annotation.Secured
 import org.apache.log4j.Logger
 
 /**
@@ -7,18 +8,19 @@ import org.apache.log4j.Logger
  *
  * @author Philip Wu
  */
+@Secured(value=["IS_AUTHENTICATED_FULLY"])
 class StudyController {
 
     Logger logger = Logger.getLogger(StudyController.class)
 
     OpenCGAService openCGAService
 
-    String user = 'hongyu'
-    String password = 'agha'
 
     def index() {
 
-        String sessionId = openCGAService.login(user, password)
+        def(user, password) = openCGAService.userPassword()
+
+        String sessionId = openCGAService.login(user.username, password)
         def studies = openCGAService.searchStudies(sessionId)
 
         for (def study: studies) {
@@ -32,7 +34,9 @@ class StudyController {
 
         String studyId = params.id
 
-        String sessionId = openCGAService.login(user, password)
+        def(user, password) = openCGAService.userPassword()
+
+        String sessionId = openCGAService.login(user.username, password)
 
         def studyInfo = openCGAService.studyInfo(sessionId, studyId)
 

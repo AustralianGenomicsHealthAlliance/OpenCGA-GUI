@@ -1,5 +1,6 @@
 package agha.opencga.gui
 
+import grails.plugin.springsecurity.annotation.Secured
 import org.apache.log4j.Logger
 
 /**
@@ -7,6 +8,7 @@ import org.apache.log4j.Logger
  *
  * @author Philip Wu
  */
+@Secured(value=["IS_AUTHENTICATED_FULLY"])
 class DownloadController {
 
     Logger logger = Logger.getLogger(DownloadController.class)
@@ -17,7 +19,9 @@ class DownloadController {
 
         String fileId = params.id
 
-        String sessionId = openCGAService.login('hongyu', 'agha')
+        def(user, password) = openCGAService.userPassword()
+
+        String sessionId = openCGAService.login(user.username, password)
 
         // Get the filename
         def fileInfo = openCGAService.fileInfo(sessionId, fileId)

@@ -1,6 +1,13 @@
 ---
-server:
-    port: 9090
+environments:
+    development:
+        server:
+            port: 9090
+    test:
+        server:
+            port: 8080
+        grails.serverURL: 'https://databases.apf.edu.au/opencga-gui'
+
 grails:
     profile: web
     codegen:
@@ -29,6 +36,8 @@ endpoints:
 ---
 opencga.url: "http://localhost:8080/opencga-1.0.0-rc3"
 opencga.rest.url: "http://localhost:8080/opencga-1.0.0-rc3/webservices/rest/v1"
+opencga.password: 'agha'
+opencga.agha.user: 'agha'
 
 ---
 grails:
