@@ -52,15 +52,18 @@ public class ShibbolethRequestHeaderAuthenticationFilter extends RequestHeaderAu
      * @param request
      */
     protected Object getPreAuthenticatedPrincipal(HttpServletRequest request) {
+        logger.info("getPreAuthenticatedPrincipal: enable:"+enable)
         if (!enable) return null;
 
         // Extract username
         // ShibUseHeaders On
         String username = (String)(super.getPreAuthenticatedPrincipal(request));
+        logger.info('shibUseHeaders username: '+username)
         // Or if AJP is used instead of ShibUseHeaders, then pull from attributes instead of headers
         if (! username) {
             username = request.getAttribute(accessiblePrincipalRequestHeader)
         }
+        logger.info('ajp username: '+username)
 
         // Extract displayName
         String displayName = request.getHeader("displayName")
@@ -69,7 +72,7 @@ public class ShibbolethRequestHeaderAuthenticationFilter extends RequestHeaderAu
         }
 
 
-        logger.debug("authenticatedPrincipal: "+username)
+        logger.info("authenticatedPrincipal: "+username)
         if (username ) {
 
             try {
@@ -83,6 +86,7 @@ public class ShibbolethRequestHeaderAuthenticationFilter extends RequestHeaderAu
                     u.email = username
                     u.enabled = true
                     u.displayName = displayName
+                    u.password = 'not_applicable'
                     boolean saved = u.save()
                     logger.info("New user created: "+saved)
                     if (! saved) {

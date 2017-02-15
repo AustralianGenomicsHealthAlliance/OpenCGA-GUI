@@ -17,6 +17,8 @@ beans = {
         continueFilterChainOnUnsuccessfulAuthentication = false
         authenticationManager = ref('authenticationManager')
         userDetailsService = ref('userDetailsService')
+        exceptionIfHeaderMissing = false
+        checkForPrincipalChanges = false
         enable = true
     }
 

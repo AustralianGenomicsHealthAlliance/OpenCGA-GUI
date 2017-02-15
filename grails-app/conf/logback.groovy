@@ -37,6 +37,15 @@ if (Environment.isDevelopmentMode() && targetDir != null) {
     root(ERROR, ['FULL_STACKTRACE'])
 }
 else {
-    logger("agha", INFO, ['STDOUT'])
-    root(ERROR, [])
+
+    appender("FULL_STACKTRACE", FileAppender) {
+        file = "${targetDir}/stacktrace.log"
+        append = true
+        encoder(PatternLayoutEncoder) {
+            pattern = "%level %logger - %msg%n"
+        }
+    }
+
+    logger("agha", DEBUG, ['STDOUT'])
+    root(DEBUG, ['FULL_STACKTRACE'])
 }

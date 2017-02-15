@@ -28,6 +28,7 @@ grails.plugin.springsecurity.filterChain.chainMap = [
 
 environments {
 	test {
+		System.out.println('setting providerNames')
 		grails.plugin.springsecurity.providerNames=['preauthAuthenticationProvider', 'rememberMeAuthenticationProvider']
 	}
 }

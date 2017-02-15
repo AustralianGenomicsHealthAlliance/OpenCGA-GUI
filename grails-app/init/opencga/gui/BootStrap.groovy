@@ -4,6 +4,8 @@ import agha.opencga.gui.Role
 import agha.opencga.gui.RoleType
 import agha.opencga.gui.User
 import agha.opencga.gui.UserRole
+import grails.plugin.springsecurity.SecurityFilterPosition
+import grails.plugin.springsecurity.SpringSecurityUtils
 
 class BootStrap {
 
@@ -12,14 +14,33 @@ class BootStrap {
         initSecurityRoles()
         initAdmin()
 
+        // Shibboleth configuration
+        environments {
+            development {
+            }
+            test {
+                System.out.println('setting the shibAuthFilter')
+                SpringSecurityUtils.clientRegisterFilter('shibAuthFilter', SecurityFilterPosition.PRE_AUTH_FILTER.order + 10)
+            }
+            production {
+                SpringSecurityUtils.clientRegisterFilter('shibAuthFilter', SecurityFilterPosition.PRE_AUTH_FILTER.order + 10)
+            }
+            shibboleth {
+                SpringSecurityUtils.clientRegisterFilter('shibAuthFilter', SecurityFilterPosition.PRE_AUTH_FILTER.order + 10)
+            }
+
+        }
+
+
     }
     def destroy = {
     }
 
 
     def initAdmin() {
-        createUser('philipwu', 'philip.wu@anu.edu.au', 'agha', RoleType.ADMIN)
-        createUser('hongyu', 'hongyu.ma@anu.edu.au', 'agha', RoleType.ADMIN)
+        createUser('philip.wu@anu.edu.au', 'philip.wu@anu.edu.au', 'agha', RoleType.ADMIN)
+        //createUser('philipwu', 'philip.wu@anu.edu.au', 'agha', RoleType.ADMIN)
+        //createUser('hongyu', 'hongyu.ma@anu.edu.au', 'agha', RoleType.ADMIN)
     }
 
     def initSecurityRoles() {
@@ -45,5 +66,7 @@ class BootStrap {
             System.out.println("Saved? "+saved+" Errors saving user role [user:" + username + ", role:" + roleType.toString() + "]: "+userRole.errors)
         }
     }
+
+
 
 }
