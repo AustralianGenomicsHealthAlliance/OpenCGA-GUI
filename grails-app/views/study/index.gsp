@@ -11,9 +11,54 @@
 <body>
 
 
+<script>
+
+    function submitDialog() {
+        $('#studyForm').submit();
+    }
+
+    $( function() {
+        dialog = $( "#dialog" ).dialog({
+          autoOpen: false,
+          height: 400,
+          width: 450,
+          modal: true,
+          buttons: {
+            "Create": submitDialog,
+            Cancel: function() {
+              dialog.dialog( "close" );
+            }
+          }
+        });
+
+        $( "#createStudy" ).button().on( "click", function() {
+          dialog.dialog( "open" );
+        });
+
+    });
+
+
+</script>
+
+<div id="dialog" title="Create Study" style="display:none;">
+
+    <g:form name="studyForm" controller="study" action="create">
+        <div>
+            Name: <g:textField name="name" size="40"/>
+        </div>
+    </g:form>
+
+</div>
+
 <div id="content" role="main">
     <section class="row colset-2-its">
         <h1>Studies</h1>
+
+        <div>
+            <button id="createStudy">Create new Study</button>
+        </div>
+
+        <g:if test="${studies}">
 
             <table>
                 <tr>
@@ -37,6 +82,10 @@
                     </tr>
                 </g:each>
             </table>
+        </g:if>
+        <g:else>
+            <div>No studies available</div>
+        </g:else>
     </section>
 </div>
 

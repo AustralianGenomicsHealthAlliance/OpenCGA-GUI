@@ -6,6 +6,7 @@ import grails.plugins.rest.client.RestBuilder
 import grails.plugins.rest.client.RestResponse
 import grails.transaction.Transactional
 import org.apache.log4j.Logger
+import org.grails.web.json.JSONArray
 import org.grails.web.json.JSONObject
 import org.springframework.http.HttpMethod
 import org.springframework.http.client.ClientHttpRequest
@@ -300,6 +301,37 @@ class OpenCGAService {
         }
 
         return projectIdMap
+    }
+
+
+    def studyCreate(String sessionId, String name, String projectId) {
+        logger.info('Creating study: '+name)
+        String alias = name.replaceAll("\\s", "")
+
+
+
+        JSONObject json = new JSONObject()
+        // name
+        json.put('name', name)
+        // alias
+        json.put('alias', alias)
+        // type
+        json.put('type', 'CASE_CONTROL')
+
+        JSONArray jsonArray = new JSONArray()
+        jsonArray.add(json)
+
+        String loginUrl = buildOpencgaRestUrl('/studies/create?sid='+sessionId+'&projectId='+projectId)
+        RestBuilder rest = new RestBuilder()
+        RestResponse resp = rest.post(loginUrl) {
+            contentType('application/json')
+            body(jsonArray.toString())
+        }
+
+        logger.info('json='+resp.json)
+        return resp.json
+
+
     }
 
     /**

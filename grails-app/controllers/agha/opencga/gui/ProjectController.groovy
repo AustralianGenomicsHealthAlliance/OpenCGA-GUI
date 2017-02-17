@@ -57,4 +57,15 @@ class ProjectController {
     }
 
 
+    def createStudy() {
+        String studyName = params.name
+        logger.info('studyName='+studyName)
+        String sessionId = openCGAService.loginCurrentUser()
+        def resp = openCGAService.studyCreate(sessionId, studyName, params.projectId)
+
+        logger.info("resp: "+resp.json)
+
+        redirect (action: 'show', id:params.projectId)
+    }
+
 }

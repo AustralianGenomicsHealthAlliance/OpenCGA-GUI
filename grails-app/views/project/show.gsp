@@ -10,6 +10,47 @@
 </head>
 <body>
 
+<script>
+
+    function submitDialog() {
+        $('#studyForm').submit();
+    }
+
+    $( function() {
+        dialog = $( "#dialog" ).dialog({
+          autoOpen: false,
+          height: 400,
+          width: 450,
+          modal: true,
+          buttons: {
+            "Create": submitDialog,
+            Cancel: function() {
+              dialog.dialog( "close" );
+            }
+          }
+        });
+
+        $( "#createStudy" ).button().on( "click", function() {
+          dialog.dialog( "open" );
+        });
+
+    });
+
+
+</script>
+
+<div id="dialog" title="Create Study" style="display:none;">
+
+    <g:form name="studyForm" controller="project" action="createStudy">
+        <div>
+            Name: <g:textField name="name" size="40"/>
+
+            <g:hiddenField name="projectId" value="${project.id}" />
+        </div>
+    </g:form>
+
+</div>
+
 
 <div id="content" role="main">
     <section class="row colset-2-its">
@@ -20,22 +61,31 @@
             <fieldset>
                 <legend>Studies</legend>
 
-                <table>
-                    <tr>
-                        <th>Name</th>
-                        <th>Owner</th>
-                    </tr>
-                    <g:each in="${ project.studies }" var="study">
+                <div>
+                    <button id="createStudy">Create new Study</button>
+                </div>
+
+                <g:if test="${project.studies}">
+                    <table>
                         <tr>
-                            <td>
-                                <g:link controller="study" action="show" params="[id: study.id]">
-                                    ${study.name?.encodeAsHTML()}
-                                </g:link>
-                            </td>
-                            <td>${OpencgaHelper.parseProjectOwnerFromUri(study.uri)?.encodeAsHTML()}</td>
+                            <th>Name</th>
+                            <th>Owner</th>
                         </tr>
-                    </g:each>
-                </table>
+                        <g:each in="${ project.studies }" var="study">
+                            <tr>
+                                <td>
+                                    <g:link controller="study" action="show" params="[id: study.id]">
+                                        ${study.name?.encodeAsHTML()}
+                                    </g:link>
+                                </td>
+                                <td>${OpencgaHelper.parseProjectOwnerFromUri(study.uri)?.encodeAsHTML()}</td>
+                            </tr>
+                        </g:each>
+                    </table>
+                </g:if>
+                <g:else>
+                    <div>No studies available</div>
+                </g:else>
             </fieldset>
 
 
