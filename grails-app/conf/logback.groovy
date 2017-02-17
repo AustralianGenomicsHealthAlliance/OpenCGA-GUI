@@ -46,6 +46,7 @@ else {
         }
     }
 
-    logger("agha", DEBUG, ['STDOUT'])
-    root(DEBUG, ['FULL_STACKTRACE'])
+    logger("StackTrace", ERROR, ['FULL_STACKTRACE'], false)
+    logger("agha", INFO, ['STDOUT'])
+    root(ERROR, ['FULL_STACKTRACE'])
 }

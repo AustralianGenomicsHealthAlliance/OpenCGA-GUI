@@ -6,6 +6,7 @@ import grails.plugins.rest.client.RestBuilder
 import grails.plugins.rest.client.RestResponse
 import grails.transaction.Transactional
 import org.apache.log4j.Logger
+import org.grails.web.json.JSONObject
 import org.springframework.http.HttpMethod
 import org.springframework.http.client.ClientHttpRequest
 import org.springframework.http.client.ClientHttpResponse
@@ -72,8 +73,18 @@ class OpenCGAService {
 
         logger.info('json response: '+resp.json)
 
-        String sessionId = resp.json.response.get(0).result.get(0).sessionId
+        String sessionId = resp.json?.response?.get(0)?.result?.get(0)?.sessionId
         logger.info('sessionId: '+sessionId)
+        return sessionId
+    }
+
+    /**
+     * Helper method to login current user quickly
+     * @return
+     */
+    public String loginCurrentUser() {
+        def(user, password) = this.userPassword()
+        String sessionId = this.login(user.username, password)
         return sessionId
     }
 
@@ -85,6 +96,51 @@ class OpenCGAService {
         String username = grailsApplication.config.opencga.agha.user
         String password = grailsApplication.config.opencga.password
         return login(username, password)
+    }
+
+    /**
+     * Make sure the admin password is already defaulted in /opt/opencga/conf/configuration.yml
+     * @param userId
+     * @param name
+     * @param password
+     * @param email
+     * @return
+     */
+    public String userCreate(String userId, String name, String password, String email) {
+
+
+        JSONObject json = new JSONObject()
+        json.put('userId', userId)
+        json.put('name', name)
+        json.put('password', password)
+        json.put('email', email)
+
+        String url = buildOpencgaRestUrl('/users/create')
+        RestBuilder rest = new RestBuilder()
+        RestResponse resp = rest.post(url) {
+            contentType('application/json')
+            body(json.toString())
+        }
+
+        logger.info('resp='+resp.json)
+
+        // echo agha | ./opencga-admin.sh  users create -u hongyu.ma2@anu.edu.au --email hongyu.ma@anu.edu.au --name hongyu2 --user-password agha --password
+
+        // Create user command
+//        String opencgaBin = grailsApplication.config.opencga.bin
+//        String script = opencgaBin + '/opencga-admin.sh'
+//        List createUserCommand = ['sh', '-c', script, 'users', 'create', '-u', userId, '--email', email, '--name', name, '--user-password', password]
+//        List createUserCommand = ['sh', '-c', script, userId, email, name]
+//        String std = CliExec.execCommand(createUserCommand)
+//        logger.info('std: '+std)
+//        // Password command
+//        String adminPassword = grailsApplication.config.opencga.password
+//        List passwordCommand = ['echo', adminPassword]
+//        def p = createUserCommand.execute()
+        //def p = ['sh', '-c', script+' users create -u '+userId+' --email '+email+' --name '+name+' --user-password agha'].execute()
+        //def std = p.waitFor()
+//        logger.info('std: '+p.text)
+
     }
 
     /**
@@ -162,6 +218,44 @@ class OpenCGAService {
 
         logger.info('json='+resp.json)
         return resp.json
+    }
+
+    def projectInfo(String sessionId, String projectId) {
+
+        String url = buildOpencgaRestUrl('/projects/'+projectId+'/info?sid='+sessionId)
+        RestBuilder rest = new RestBuilder()
+        RestResponse resp = rest.get(url)
+
+        logger.info('json='+resp.json)
+        return resp.json
+    }
+
+    def projectCreate(String sessionId, String name) {
+
+        String alias = name.replaceAll("\\s", "")
+
+        JSONObject json = new JSONObject()
+        // name
+        json.put('name', name)
+        // alias
+        json.put('alias', alias)
+        // organism.scientificName
+        json.put('organism.scientificName', 'Homo Sapiens')
+        // organism.assembly
+        json.put('organism.assembly', 'GRCh37')
+
+
+        String loginUrl = buildOpencgaRestUrl('/projects/create?sid='+sessionId)
+        RestBuilder rest = new RestBuilder()
+        RestResponse resp = rest.post(loginUrl) {
+            contentType('application/json')
+            body(json.toString())
+        }
+
+        logger.info('json='+resp.json)
+        return resp.json
+
+
     }
 
     /**

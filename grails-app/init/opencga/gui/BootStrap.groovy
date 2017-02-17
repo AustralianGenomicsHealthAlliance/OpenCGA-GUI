@@ -1,5 +1,6 @@
 package opencga.gui
 
+import agha.opencga.gui.OpenCGAService
 import agha.opencga.gui.Role
 import agha.opencga.gui.RoleType
 import agha.opencga.gui.User
@@ -8,6 +9,8 @@ import grails.plugin.springsecurity.SecurityFilterPosition
 import grails.plugin.springsecurity.SpringSecurityUtils
 
 class BootStrap {
+
+    OpenCGAService openCGAService
 
     def init = { servletContext ->
 
@@ -39,6 +42,7 @@ class BootStrap {
 
     def initAdmin() {
         createUser('philip.wu@anu.edu.au', 'philip.wu@anu.edu.au', 'agha', RoleType.ADMIN)
+        openCGAService.userCreate('philip.wu@anu.edu.au', 'PhilipWu', 'agha', 'philip.wu@anu.edu.au')
         //createUser('philipwu', 'philip.wu@anu.edu.au', 'agha', RoleType.ADMIN)
         //createUser('hongyu', 'hongyu.ma@anu.edu.au', 'agha', RoleType.ADMIN)
     }

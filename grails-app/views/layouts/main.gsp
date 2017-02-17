@@ -9,6 +9,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
 
     <asset:stylesheet src="application.css"/>
+    <asset:javascript src="jquery-2.2.0.min.js"/>
+    <asset:javascript src="jquery-ui.min.js"/>
+
+
+    <asset:stylesheet src="jquery-ui.min.css" />
+    <asset:stylesheet src="jquery-ui.theme.min.css" />
+
 
     <g:layoutHead/>
 </head>

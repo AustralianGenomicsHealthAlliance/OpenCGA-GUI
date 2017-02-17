@@ -12,19 +12,22 @@ class ProjectController {
 
     Logger logger = Logger.getLogger(ProjectController.class)
 
+    SpringSecurityService springSecurityService
     OpenCGAService openCGAService
 
     def index() {
-
-        def(user, password) = openCGAService.userPassword()
-
-        String sessionId = openCGAService.login(user.username, password)
+        def user = springSecurityService.currentUser
+        String sessionId = openCGAService.loginCurrentUser()
 
         logger.info('sessionId='+sessionId)
 
-        List projects = openCGAService.accessibleUserProjects(sessionId, user.username)
+        if (sessionId) {
+            List projects = openCGAService.accessibleUserProjects(sessionId, user.username)
 
-        [projects: projects]
+            [projects: projects]
+        } else {
+            render "No access to OpenCGA. Please contact the administrator."
+        }
     }
 
 
@@ -32,14 +35,26 @@ class ProjectController {
 
         Integer projectId = params.id?.toInteger()
 
-        def(user, password) = openCGAService.userPassword()
+        String sessionId = openCGAService.loginCurrentUser()
 
-        String sessionId = openCGAService.login(user.username, password)
-
+        def user = springSecurityService.currentUser
         Map projectMap = openCGAService.mapAccessibleProjects(sessionId, user.username)
 
         def project = projectMap.get(projectId)
 
         [project: project]
     }
+
+    def create() {
+        String projectName = params.name
+        logger.info('projectName='+projectName)
+        String sessionId = openCGAService.loginCurrentUser()
+        def resp = openCGAService.projectCreate(sessionId, projectName)
+
+        logger.info("resp: "+resp.json)
+
+        redirect (action: 'index')
+    }
+
+
 }
