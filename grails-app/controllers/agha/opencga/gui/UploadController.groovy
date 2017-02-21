@@ -26,7 +26,7 @@ class UploadController {
 
     def fineuploader() {
         logger.debug('====== fineuploader =====')
-        logger.debug('qquuid:'+params.qquuid)
+        logger.info('qquuid:'+params.qquuid)
         logger.debug('qqpartindex: '+params.qqpartindex)
         logger.debug('qqpartbyteoffset: '+params.qqpartbyteoffset)
         logger.debug('qqtotalfilesize: '+params.qqpartbyteoffset)
@@ -65,8 +65,8 @@ class UploadController {
 
         logger.debug('===== fineuploaderChunkSuccess =====')
 
-        logger.debug('qquuid:'+params.qquuid)
-        logger.debug('qqpartindex: '+params.qqpartindex)
+        logger.info('qquuid:'+params.qquuid)
+        logger.info('qqpartindex: '+params.qqpartindex)
         logger.debug('qqpartbyteoffset: '+params.qqpartbyteoffset)
         logger.debug('qqtotalfilesize: '+params.qqpartbyteoffset)
         logger.debug('qqtotalparts: '+params.qqtotalparts)
@@ -88,6 +88,33 @@ class UploadController {
         json.put('success', Boolean.TRUE)
         render(status: HttpStatus.OK, contentType: 'application/json', text: json.toString())
 
+    }
+
+    def cancel() {
+        logger.info('cancelling qquuid:'+params.qquuid)
+
+        String uuid = params.qquuid
+
+        // Find the folder
+        File dir = createTmpFolder(uuid)
+
+        // Delete the folder to save space
+        if (dir.exists()) {
+            // Due to concurrency, files in the directory may still be open.
+            // So retry multiple times to give concurrent processes time to complete
+            boolean deleted = false
+            int retryCount = 0;
+            while (! deleted && retryCount < 5) {
+                deleted = dir.deleteDir()
+                logger.info('deleted='+deleted)
+                Thread.sleep(2000)
+                retryCount++
+            }
+        }
+
+        JSONObject json = new JSONObject()
+        json.put('success', Boolean.TRUE)
+        render(status: HttpStatus.OK, contentType: 'application/json', text: json.toString())
     }
 
 

@@ -187,13 +187,17 @@
                     endpoint: '${createLink(controller:"upload", action:"fineuploaderChunkSuccess")}'
                 }
             },
-            deleteFile: {
-                enabled: true,
-                endpoint: '${createLink(controller:"upload", action:"deleteFile")}'
-            }
             resume: { enabled: true },
             autoUpload: false,
-            debug: true
+            debug: true,
+            callbacks: {
+                onCancel: function(id) {
+                    console.log('deleting server side file from cancelled uploads for id: '+id)
+                    var uuid = manualUploader.getUuid(id)
+                    console.log('uuid='+uuid);
+                    $.post("${createLink(controller:'upload', action:'cancel')}?qquuid="+uuid)
+                }
+            }
         });
 
         qq(document.getElementById("trigger-upload")).attach("click", function() {
