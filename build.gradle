@@ -64,6 +64,9 @@ dependencies {
     // Spring security
     compile 'org.grails.plugins:spring-security-core:3.1.1'
     compile 'org.grails.plugins:spring-security-acl:3.1.0'
+
+    // Webdav client
+    compile 'com.github.lookfirst:sardine:5.7'
 }
 
 bootRun {

@@ -14,12 +14,13 @@ class ProjectController {
 
     SpringSecurityService springSecurityService
     OpenCGAService openCGAService
+    CloudstorService cloudstorService
 
     def index() {
         def user = springSecurityService.currentUser
         String sessionId = openCGAService.loginCurrentUser()
 
-        logger.info('sessionId='+sessionId)
+        //cloudstorService.list()
 
         if (sessionId) {
             List projects = openCGAService.accessibleUserProjects(sessionId, user.username)

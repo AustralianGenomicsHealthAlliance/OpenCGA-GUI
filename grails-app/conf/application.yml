@@ -15,6 +15,10 @@ grails:
     spring:
         transactionManagement:
             proxies: false
+    controllers:
+        upload:
+            maxFileSize: -1
+            maxRequestSize: -1
 info:
     app:
         name: '@info.app.name@'
@@ -39,6 +43,13 @@ opencga.rest.url: "http://localhost:8080/opencga-1.0.0-rc3/webservices/rest/v1"
 opencga.password: 'agha'
 opencga.agha.user: 'agha'
 opencga.bin: '/opt/opencga/bin'
+datastore.path: '/opt/opencga/datastore'
+datastore.tmp.path: '/opt/opencga/datastore/tmp'
+
+
+---
+cloudstor.url: "https://cloudstor.aarnet.edu.au/plus/remote.php/webdav/Shared/ANU-Australian-Genomics-Health-Alliance"
+cloudstor.username: "philip.wu@anu.edu.au"
 
 ---
 grails:

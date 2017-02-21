@@ -160,7 +160,8 @@
             element: document.getElementById('fine-uploader-manual-trigger'),
             template: 'qq-template-manual-trigger',
             request: {
-                endpoint: '${createLink(controller:"study", action:"upload")}'
+                endpoint: '${createLink(controller:"upload", action:"fineuploader")}',
+                params: {studyId: ${study.id} }
             },
             thumbnails: {
                 placeholders: {
@@ -168,6 +169,16 @@
                     notAvailablePath: '${resource(dir: "fine-uploader/placeholders", file:"not_available-generic.png")}'
                 }
             },
+            chunking: {
+                enabled: true,
+                concurrent: {
+                    enabled:true
+                },
+                success: {
+                    endpoint: '${createLink(controller:"upload", action:"fineuploaderChunkSuccess")}'
+                }
+            },
+            resume: { enabled: true },
             autoUpload: false,
             debug: true
         });
