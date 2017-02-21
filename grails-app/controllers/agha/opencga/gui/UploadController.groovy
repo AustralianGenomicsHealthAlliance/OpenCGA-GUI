@@ -10,7 +10,7 @@ import org.springframework.web.multipart.support.StandardMultipartHttpServletReq
 import javax.servlet.http.HttpServletRequest
 
 /**
- * An upload controller
+ * An upload controller using fineuploader as the frontend
  *
  * Reference for fineuploader: http://docs.fineuploader.com/branch/master/features/chunking.html
  *
@@ -25,15 +25,16 @@ class UploadController {
     OpenCGAService openCGAService
 
     def fineuploader() {
-        logger.info('====== fineuploader =====')
-        logger.info('qquuid:'+params.qquuid)
-        logger.info('qqpartindex: '+params.qqpartindex)
-        logger.info('qqpartbyteoffset: '+params.qqpartbyteoffset)
-        logger.info('qqtotalfilesize: '+params.qqpartbyteoffset)
-        logger.info('qqtotalparts: '+params.qqtotalparts)
-        logger.info('qqfilename: '+params.qqfilename)
-        logger.info('qqchunksize: '+params.qqchunksize)
-        logger.info('studyId: '+params.studyId)
+        logger.debug('====== fineuploader =====')
+        logger.debug('qquuid:'+params.qquuid)
+        logger.debug('qqpartindex: '+params.qqpartindex)
+        logger.debug('qqpartbyteoffset: '+params.qqpartbyteoffset)
+        logger.debug('qqtotalfilesize: '+params.qqpartbyteoffset)
+        logger.debug('qqtotalparts: '+params.qqtotalparts)
+        logger.debug('qqfilename: '+params.qqfilename)
+        logger.debug('qqchunksize: '+params.qqchunksize)
+        logger.debug('studyId: '+params.studyId)
+        logger.debug('qqresume: '+params.qqresume)
 
 
         File tmpFile = writeFile(request, params)
@@ -47,7 +48,7 @@ class UploadController {
                 destFile.delete()
             }
             boolean fileMoved = tmpFile.renameTo(destFile)
-            logger.info('fileMoved: '+fileMoved)
+            logger.debug('fileMoved: '+fileMoved)
         }
 
         JSONObject json = new JSONObject()
@@ -55,19 +56,24 @@ class UploadController {
         render(status: HttpStatus.OK, contentType: 'application/json', text: json.toString())
     }
 
+    /**
+     * You may specify a chunking.success.endpoint if you'd like your server to be called when all chunks have been successfully uploaded.
+     * Note that this only applies to traditional endpoint.
+     * @return
+     */
     def fineuploaderChunkSuccess() {
 
-        logger.info('===== fineuploaderChunkSuccess =====')
+        logger.debug('===== fineuploaderChunkSuccess =====')
 
-        logger.info('qquuid:'+params.qquuid)
-        logger.info('qqpartindex: '+params.qqpartindex)
-        logger.info('qqpartbyteoffset: '+params.qqpartbyteoffset)
-        logger.info('qqtotalfilesize: '+params.qqpartbyteoffset)
-        logger.info('qqtotalparts: '+params.qqtotalparts)
-        logger.info('qqfilename: '+params.qqfilename)
-        logger.info('qqchunksize: '+params.qqchunksize)
+        logger.debug('qquuid:'+params.qquuid)
+        logger.debug('qqpartindex: '+params.qqpartindex)
+        logger.debug('qqpartbyteoffset: '+params.qqpartbyteoffset)
+        logger.debug('qqtotalfilesize: '+params.qqpartbyteoffset)
+        logger.debug('qqtotalparts: '+params.qqtotalparts)
+        logger.debug('qqfilename: '+params.qqfilename)
+        logger.debug('qqchunksize: '+params.qqchunksize)
 
-        logger.info('studyId: '+params.studyId)
+        logger.debug('studyId: '+params.studyId)
 
 
         File destFolder = createProjectStudyFolder(params.studyId)
@@ -76,7 +82,7 @@ class UploadController {
         if (destFile.exists()) {
             destFile.delete()
         }
-        mergePartitionedFiles(params.qquuid, destFile)
+        mergePartitionedFiles(params.qquuid, destFile, params.qqtotalparts.toInteger())
 
         JSONObject json = new JSONObject()
         json.put('success', Boolean.TRUE)
@@ -89,7 +95,6 @@ class UploadController {
         String uploadDir = grailsApplication.config.datastore.tmp.path
         File dir = new File(uploadDir, uuid);
         boolean dirMade = dir.mkdirs();
-        logger.info('dirMade: '+dirMade)
 
         return dir
     }
@@ -100,10 +105,10 @@ class UploadController {
         // Get the studyInfo
         String sessionId = openCGAService.loginCurrentUser()
         def studyInfo = openCGAService.studyInfo(sessionId, params.studyId)
-        logger.info('studyInfo: '+studyInfo)
 
+        // Get the projectId
         String projectId = OpencgaHelper.parseProjectIdFromUri(studyInfo.uri)
-        logger.info('projectId')
+
 
         folder += '/'+projectId+'/'+studyId
 
@@ -128,18 +133,18 @@ class UploadController {
 
         // Create UUID Directory
         File dir = createTmpFolder(uuid)
-        logger.info('dir='+dir)
+        logger.debug('dir='+dir)
 
-        logger.info('content length: '+req.contentLengthLong)
+        logger.debug('content length: '+req.contentLengthLong)
 
-        String filename = (partIndex >= 0) ? uuid +'_'+ partIndex + '.part' : params.qqfilename
+        String filename = (partIndex >= 0) ? createFilePartName(uuid, partIndex) : params.qqfilename
         File destFile = new File(dir, filename)
         FileOutputStream fos = new FileOutputStream(destFile)
 
         if (req instanceof StandardMultipartHttpServletRequest) {
             req.fileNames.each {
                 def mFile = req.getFile(it)
-                logger.info('file: '+mFile)
+                logger.debug('file: '+mFile)
                 fos << mFile.bytes
             }
         } else {
@@ -150,32 +155,26 @@ class UploadController {
         return destFile
     }
 
-    private void mergePartitionedFiles(String uuid, File destFile) {
-        logger.info('merging files to: '+destFile)
+    private String createFilePartName(String uuid, Integer partIndex) {
+        return uuid +'_' + partIndex+ '.part'
+    }
+
+    private void mergePartitionedFiles(String uuid, File destFile, Integer totalParts) {
+        logger.debug('merging files to: '+destFile)
         // Create UUID Directory
         File dir = createTmpFolder(uuid)
 
-        // Collect names and files into data structures
-        List filenames = []
-        Map<String, File> fileMap = [:]
-
         // Must merge in correct order
-        dir.eachFileMatch(FileType.FILES, ~/.*\.part/) {
-            filenames << it.name
-            fileMap.put(it.name, it)
-        }
-        filenames.sort()
-
-        // Now merge in order and delete temporary files
-        filenames.each {
-            File filePart = fileMap.get(it)
+        for (int i=0; i < totalParts; i++) {
+            String filename  = createFilePartName(uuid, i)
+            File filePart = new File(dir.absolutePath, filename)
             destFile << filePart.newInputStream()
             // Once appended, delete the part
             boolean deleted = filePart.delete()
-            logger.info('deleted part: '+deleted)
         }
 
-
+        // Delete the temporary folder
+        dir.delete()
     }
 
 }

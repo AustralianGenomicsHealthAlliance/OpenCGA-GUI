@@ -42,9 +42,17 @@ class StudyController {
 
         def studyFiles = openCGAService.studyFiles(sessionId, studyId)
 
+        // Does this study have files?
+        Boolean hasFiles = Boolean.FALSE
+        studyFiles.each {
+            if (it.type == 'FILE') {
+                hasFiles = Boolean.TRUE
+            }
+        }
+
         logger.info('studyInfo: '+studyInfo)
 
-        [study: studyInfo, files: studyFiles]
+        [study: studyInfo, files: studyFiles, hasFiles: hasFiles]
 
     }
 

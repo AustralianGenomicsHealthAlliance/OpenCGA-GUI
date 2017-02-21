@@ -97,7 +97,9 @@
         }
 
         #fine-uploader-manual-trigger .buttons {
-            width: 36%;
+            width: 20%;
+            margin: 10px;
+            padding: 5px;
         }
 
         #fine-uploader-manual-trigger .qq-uploader .qq-total-progress-bar-container {
@@ -115,32 +117,40 @@
             <fieldset>
                 <legend>Files</legend>
 
-                <table>
-                    <tr>
-                        <th>Name</th>
-                        <th>Format</th>
-                        <th>Size</th>
-                    </tr>
-                    <g:each in="${ files }" var="file">
-                        <g:if test="${file.type == 'FILE'}">
-                            <tr>
-                                <td>
-                                    <g:link controller="download" action="download" params="[id: file.id]">
-                                        ${file.name?.encodeAsHTML()}
-                                    </g:link>
-                                </td>
-                                <td>${file.format?.encodeAsHTML()}</td>
-                                <td>
-                                    <g:if test="${file.size}">
-                                        ${Math.ceil(file.size / 1024 / 1024).toInteger() } MB
-                                    </g:if>
-                                </td>
-                            </tr>
-                        </g:if>
-                    </g:each>
-                </table>
+                <g:if test="${hasFiles}">
+                    <table>
+                        <tr>
+                            <th>Name</th>
+                            <th>Format</th>
+                            <th>Size</th>
+                        </tr>
+                        <g:each in="${ files }" var="file">
+                            <g:if test="${file.type == 'FILE'}">
+                                <tr>
+                                    <td>
+                                        <g:link controller="download" action="download" params="[id: file.id]">
+                                            ${file.name?.encodeAsHTML()}
+                                        </g:link>
+                                    </td>
+                                    <td>${file.format?.encodeAsHTML()}</td>
+                                    <td>
+                                        <g:if test="${file.size}">
+                                            ${Math.ceil(file.size / 1024 / 1024).toInteger() } MB
+                                        </g:if>
+                                    </td>
+                                </tr>
+                            </g:if>
+                        </g:each>
+                    </table>
+                </g:if>
+                <g:else>
+                    No files available
+                </g:else>
             </fieldset>
 
+            <!-- Fine Uploader DOM Element
+            ====================================================================== -->
+            <div id="fine-uploader-manual-trigger"></div>
 
         </g:if>
         <g:else>
@@ -149,9 +159,7 @@
     </section>
 </div>
 
-<!-- Fine Uploader DOM Element
-====================================================================== -->
-<div id="fine-uploader-manual-trigger"></div>
+
 
 <!-- Your code to create an instance of Fine Uploader and bind to the DOM/template
  ====================================================================== -->
@@ -171,6 +179,7 @@
             },
             chunking: {
                 enabled: true,
+                partSize: 50000000,
                 concurrent: {
                     enabled:true
                 },
@@ -178,6 +187,10 @@
                     endpoint: '${createLink(controller:"upload", action:"fineuploaderChunkSuccess")}'
                 }
             },
+            deleteFile: {
+                enabled: true,
+                endpoint: '${createLink(controller:"upload", action:"deleteFile")}'
+            }
             resume: { enabled: true },
             autoUpload: false,
             debug: true
