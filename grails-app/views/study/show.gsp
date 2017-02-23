@@ -11,6 +11,54 @@
     <script src="${resource(dir: 'fine-uploader', file:'fine-uploader.js')}" ></script>
     <link rel="stylesheet" href="${resource(dir:'fine-uploader', file:'fine-uploader-new.css') }" />
 
+    <script>
+
+    function submitShareDialog() {
+        $('#shareForm').submit();
+    }
+
+    function removeAccess(el, studyId) {
+        var user = $(el).attr('user');
+        console.log('removingAccess: '+user);
+
+        $.post("${createLink(controller:'study', action:'unshare')}?user="+user+'&studyId='+${study.id})
+            .done(function(data) {
+                console.log('unshared: '+data);
+                $(el).parent().remove();
+            });
+    }
+
+    $( function() {
+        dialog = $( "#shareDlg" ).dialog({
+          autoOpen: false,
+          height: 400,
+          width: 550,
+          modal: true,
+          buttons: {
+            "Share": submitShareDialog,
+            Cancel: function() {
+              dialog.dialog( "close" );
+            }
+          }
+        });
+
+        $( "#shareBtn" ).button().on( "click", function() {
+          dialog.dialog( "open" );
+        });
+
+        $('span.aclMember').mouseover(function(event) {
+            $(this).find('img').show();
+        });
+        $('span.aclMember').mouseout(function(event) {
+            $(this).find('img').hide();
+        });
+
+
+
+    });
+
+    </script>
+
 </head>
 <body>
 
@@ -114,6 +162,56 @@
         <g:if test="${study}">
             <h1>Study - ${study.name?.encodeAsHTML() }</h1>
 
+            <div>
+                <g:if test="${canShare}">
+                    <button id="shareBtn">Share</button>
+                </g:if>
+            </div>
+
+            <div id="shareDlg" title="Share study" style="display:none">
+                <g:form name="shareForm" action="share">
+                    <div>
+                        User emails:
+                        <g:textField name="users" size="50" />
+                    </div>
+                    <br/>
+                    <div>
+                        Permissions:
+                        <g:select name="permissions" from="${['', 'admin', 'analyst', 'view_only' ]}" valueMessagePrefix="study.permission" required="true" />
+                    </div>
+
+                    <g:hiddenField name="id" value="${study.id}" />
+                </g:form>
+            </div>
+
+            <fieldset>
+                <legend>Details</legend>
+                <table>
+                    <tr>
+                        <td>Owner:</td>
+                        <td>${OpencgaHelper.parseProjectOwnerFromUri(study.uri)}</td>
+                    </tr>
+                    <tr>
+                        <td>Shared with:</td>
+                        <td>
+                            <g:each in="${study.acl}" var="user" status="i">
+                                <g:if test="${ i > 0}">
+                                    ,
+                                </g:if>
+                                <span class="aclMember">
+                                    ${user.member?.encodeAsHTML()}
+                                    <g:if test="${canShare}">
+                                        <asset:image src="skin/delete.png" style="border: 1px solid gray; border-radius: 5px; cursor: pointer; display:none;" user="${user.member}" onclick="removeAccess(this, ${study.id});" />
+                                    </g:if>
+                                </span>
+
+                            </g:each>
+
+                        </td>
+                    </tr>
+                </table>
+            </fieldset>
+
             <fieldset>
                 <legend>Files</legend>
 
@@ -148,6 +246,7 @@
                 </g:else>
             </fieldset>
 
+            <h2>Add files</h2>
             <!-- Fine Uploader DOM Element
             ====================================================================== -->
             <div id="fine-uploader-manual-trigger"></div>
@@ -196,6 +295,17 @@
                     var uuid = manualUploader.getUuid(id)
                     console.log('uuid='+uuid);
                     $.post("${createLink(controller:'upload', action:'cancel')}?qquuid="+uuid)
+                },
+                onAllComplete: function(succeeded, failed) {
+                    console.log('succeeded: '+succeeded);
+                    console.log('failed: '+failed);
+
+                    if (failed.length == 0) {
+                        alert('Uploaded successful. Reloading page');
+                        location.reload();
+                    } else {
+                        alert('Failed to upload the following files: '+ failed);
+                    }
                 }
             }
         });

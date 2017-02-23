@@ -99,6 +99,31 @@ class OpenCGAService {
         return login(username, password)
     }
 
+    public loginCli(String username, String password) {
+
+        // echo agha | ./opencga.sh users login -u philip.wu@anu.edu.au -p
+
+        String opencgaBin = grailsApplication.config.opencga.bin
+
+        List loginCmd = ['/bin/bash', '-c', 'echo agha | '+opencgaBin+'/opencga.sh users login -u philip.wu@anu.edu.au -p']
+
+        // Create user command
+//        String opencgaBin = grailsApplication.config.opencga.bin
+//        String script = opencgaBin + '/opencga-admin.sh'
+//        List createUserCommand = ['sh', '-c', script, 'users', 'create', '-u', userId, '--email', email, '--name', name, '--user-password', password]
+//        List createUserCommand = ['sh', '-c', script, userId, email, name]
+//        String std = CliExec.execCommand(createUserCommand)
+//        logger.info('std: '+std)
+//        // Password command
+//        String adminPassword = grailsApplication.config.opencga.password
+//        List passwordCommand = ['echo', adminPassword]
+//        def p = createUserCommand.execute()
+        //def p = ['sh', '-c', script+' users create -u '+userId+' --email '+email+' --name '+name+' --user-password agha'].execute()
+        //def std = p.waitFor()
+//        logger.info('std: '+p.text)
+
+    }
+
     /**
      * Make sure the admin password is already defaulted in /opt/opencga/conf/configuration.yml
      * @param userId
@@ -311,6 +336,7 @@ class OpenCGAService {
 
 
         JSONObject json = new JSONObject()
+
         // name
         json.put('name', name)
         // alias
@@ -318,14 +344,11 @@ class OpenCGAService {
         // type
         json.put('type', 'CASE_CONTROL')
 
-        JSONArray jsonArray = new JSONArray()
-        jsonArray.add(json)
-
         String loginUrl = buildOpencgaRestUrl('/studies/create?sid='+sessionId+'&projectId='+projectId)
         RestBuilder rest = new RestBuilder()
         RestResponse resp = rest.post(loginUrl) {
             contentType('application/json')
-            body(jsonArray.toString())
+            body(json.toString())
         }
 
         logger.info('json='+resp.json)
@@ -484,6 +507,37 @@ class OpenCGAService {
         return getJsonResult(resp.json)
     }
 
+    def studyAclCreate(String sessionId, String studyId, String members, String templateId) {
+        logger.info('studyAclCreate studyId:'+studyId+' members:'+members)
+        /*
+        {"members":"jingjing.tan@anu.edu.au","templateId":"view_only"}
+         */
+        JSONObject json = new JSONObject()
+        json['members'] = members
+        json['templateId'] = templateId
+
+        // post /{version}/studies/{study}/acl/create
+        String url = buildOpencgaRestUrl('/studies/'+studyId+'/acl/create?sid='+sessionId)
+        RestBuilder rest = new RestBuilder()
+        RestResponse resp = rest.post(url) {
+            contentType('application/json')
+            body(json.toString())
+        }
+
+        return resp.json
+    }
+
+    // get /{version}/studies/{study}/acl/{memberId}/delete
+    def studyAclDelete(String sessionId, String studyId, String user) {
+        logger.info('delete ACL for studyId: '+studyId+ ' and user: '+user)
+        String url = buildOpencgaRestUrl('/studies/'+studyId+'/acl/'+user+'/delete?sid='+sessionId)
+
+        RestBuilder rest = new RestBuilder()
+        RestResponse resp = rest.get(url)
+
+        return resp.json
+    }
+
     /**
      * Downlad the file via opencga rest webservices
      * @param sessionId
@@ -533,6 +587,23 @@ class OpenCGAService {
         return getJsonResult(resp.json).get(0)
     }
 
+    def filesLink(String sessionId, File file, String studyId) {
+        logger.info('linking file: '+file+' to studyId '+studyId)
+        String uri = 'file://'+file.absolutePath
+        String path = file.parentFile.absolutePath
+        // Remove prefixed slash if present
+        if (path.startsWith("/")) {
+            path = path.substring(1)
+        }
+
+        String url = buildOpencgaRestUrl('/files/link?sid='+sessionId+'&study='+studyId+'&parents=true&uri='+uri+'&path='+path)
+
+        RestBuilder rest = new RestBuilder()
+        RestResponse resp = rest.get(url)
+
+        logger.info('resp.json='+resp.json)
+        return resp.json
+    }
 
     /**
      * Parse json to simply get the primary result

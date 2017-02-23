@@ -49,6 +49,9 @@ class UploadController {
             }
             boolean fileMoved = tmpFile.renameTo(destFile)
             logger.debug('fileMoved: '+fileMoved)
+            // Register the file with OpenCGA
+            String sessionId = openCGAService.loginCurrentUser()
+            def filesLinkJson = openCGAService.filesLink(sessionId, destFile, params.studyId)
         }
 
         JSONObject json = new JSONObject()
@@ -83,6 +86,10 @@ class UploadController {
             destFile.delete()
         }
         mergePartitionedFiles(params.qquuid, destFile, params.qqtotalparts.toInteger())
+
+        // Register the file with OpenCGA
+        String sessionId = openCGAService.loginCurrentUser()
+        def filesLinkJson = openCGAService.filesLink(sessionId, destFile, params.studyId)
 
         JSONObject json = new JSONObject()
         json.put('success', Boolean.TRUE)

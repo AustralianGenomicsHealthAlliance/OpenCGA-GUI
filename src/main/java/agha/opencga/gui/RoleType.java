@@ -5,7 +5,9 @@ package agha.opencga.gui;
  */
 public enum RoleType {
 
-    ADMIN("ROLE_ADMIN", "Admin");
+    ADMIN("ROLE_ADMIN", "Admin"),
+    RESEARCHER("ROLE_RESEARCHER", "Researcher")
+    ;
 
     private String value;
     private String displayName;

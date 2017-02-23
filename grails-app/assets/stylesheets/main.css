@@ -369,7 +369,7 @@ input:invalid:focus, select:invalid:focus, textarea:invalid:focus {
 /* TABLES */
 
 table {
-    border-top: 1px solid #DFDFDF;
+    /*border-top: 1px solid #DFDFDF;*/
     border-collapse: collapse;
     width: 100%;
     margin-bottom: 1em;
@@ -446,7 +446,7 @@ th.desc a {
 }
 
 th:hover, tr:hover {
-    background: #79b94c;
+    background: #F8F8FF;
 }
 
 /* PAGINATION */

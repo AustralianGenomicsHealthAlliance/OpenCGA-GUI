@@ -38,8 +38,8 @@ endpoints:
         enabled: true
 
 ---
-opencga.url: "http://localhost:8080/opencga-1.0.0-rc3"
-opencga.rest.url: "http://localhost:8080/opencga-1.0.0-rc3/webservices/rest/v1"
+opencga.url: "http://localhost:8080/opencga-1.0.0-final"
+opencga.rest.url: "http://localhost:8080/opencga-1.0.0-final/webservices/rest/v1"
 opencga.password: 'agha'
 opencga.agha.user: 'agha'
 opencga.bin: '/opt/opencga/bin'
