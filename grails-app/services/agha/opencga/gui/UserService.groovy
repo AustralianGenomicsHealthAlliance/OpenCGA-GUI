@@ -17,6 +17,7 @@ class UserService {
 
 
         // Create user in opencga
+        //String opencgaUsername = openCGAService.opencgaUsername(username)
         openCGAService.userCreate(username, username, password, username)
 
     }

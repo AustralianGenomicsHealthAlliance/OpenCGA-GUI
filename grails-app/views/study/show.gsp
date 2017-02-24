@@ -221,9 +221,10 @@
                             <th>Name</th>
                             <th>Format</th>
                             <th>Size</th>
+                            <th>Indexed</th>
                         </tr>
                         <g:each in="${ files }" var="file">
-                            <g:if test="${file.type == 'FILE'}">
+                            <g:if test="${file.type == 'FILE' && file.format=='VCF'}">
                                 <tr>
                                     <td>
                                         <g:link controller="download" action="download" params="[id: file.id]">
@@ -235,6 +236,9 @@
                                         <g:if test="${file.size}">
                                             ${Math.ceil(file.size / 1024 / 1024).toInteger() } MB
                                         </g:if>
+                                    </td>
+                                    <td>
+                                        ${file.index.status.name}
                                     </td>
                                 </tr>
                             </g:if>

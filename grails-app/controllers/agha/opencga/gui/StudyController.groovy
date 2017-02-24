@@ -20,10 +20,7 @@ class StudyController {
 
 
     def index() {
-
-        def(user, password) = openCGAService.userPassword()
-
-        String sessionId = openCGAService.login(user.username, password)
+        String sessionId = openCGAService.loginCurrentUser()
         def studies = openCGAService.searchStudies(sessionId)
 
         for (def study: studies) {
@@ -39,7 +36,7 @@ class StudyController {
 
         def(user, password) = openCGAService.userPassword()
 
-        String sessionId = openCGAService.login(user.username, password)
+        String sessionId = openCGAService.loginCurrentUser()
 
         def studyInfo = openCGAService.studyInfo(sessionId, studyId)
         logger.info('studyInfo: '+studyInfo)

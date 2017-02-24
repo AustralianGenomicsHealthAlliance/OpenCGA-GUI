@@ -85,6 +85,7 @@ class OpenCGAService {
      */
     public String loginCurrentUser() {
         def(user, password) = this.userPassword()
+        //String opencgaUsername = this.opencgaUsername(user.username)
         String sessionId = this.login(user.username, password)
         return sessionId
     }
@@ -602,7 +603,35 @@ class OpenCGAService {
         RestResponse resp = rest.get(url)
 
         logger.info('resp.json='+resp.json)
+        return getJsonResult(resp.json).get(0)
+    }
+
+    // /{version}/analysis/variant/index
+    def analysisVariantIndex(String sessionId, List fileIds, Boolean annotate=Boolean.TRUE, Boolean calculateStats=Boolean.TRUE) {
+
+        logger.info('analysisVariantIndex')
+
+        String url = buildOpencgaRestUrl('/analysis/variant/index?sid='+sessionId)
+        url += '&file='+fileIds.join(',')
+        url += '&annotate='+annotate
+        url += '&calculateStats='+calculateStats
+
+        RestBuilder rest = new RestBuilder()
+        RestResponse resp = rest.get(url)
+
+        logger.info('resp.json='+resp.json)
         return resp.json
+    }
+
+    def linkFileAndIndex(String sessionId, File file, String studyId) {
+
+        def fileJson = filesLink(sessionId, file, studyId)
+        String fileId = fileJson.id
+
+        // Index and analyze file only if it's a variant
+        if (fileJson.bioformat == 'VARIANT') {
+            analysisVariantIndex(sessionId, [fileId])
+        }
     }
 
     /**
@@ -612,6 +641,12 @@ class OpenCGAService {
      */
     def getJsonResult(def json) {
         return OpencgaHelper.getJsonResult(json)
+    }
+
+    // Map username to an opencga username.
+    // Opencga doesn't not allow usernames that contain periods
+    public String opencgaUsername(String username) {
+        return username.replaceAll('\\.','_')
     }
 
 }

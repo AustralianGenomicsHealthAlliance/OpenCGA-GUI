@@ -51,7 +51,7 @@ class UploadController {
             logger.debug('fileMoved: '+fileMoved)
             // Register the file with OpenCGA
             String sessionId = openCGAService.loginCurrentUser()
-            def filesLinkJson = openCGAService.filesLink(sessionId, destFile, params.studyId)
+            openCGAService.linkFileAndIndex(sessionId, destFile, params.studyId)
         }
 
         JSONObject json = new JSONObject()
@@ -89,7 +89,7 @@ class UploadController {
 
         // Register the file with OpenCGA
         String sessionId = openCGAService.loginCurrentUser()
-        def filesLinkJson = openCGAService.filesLink(sessionId, destFile, params.studyId)
+        openCGAService.linkFileAndIndex(sessionId, destFile, params.studyId)
 
         JSONObject json = new JSONObject()
         json.put('success', Boolean.TRUE)
