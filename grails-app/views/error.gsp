@@ -25,6 +25,7 @@
         <g:else>
             <ul class="errors">
                 <li>An error has occurred</li>
+                <li>Message: ${message}</li>
             </ul>
         </g:else>
     </body>

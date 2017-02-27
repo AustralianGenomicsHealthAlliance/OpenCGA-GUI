@@ -86,6 +86,7 @@ class StudyController {
         logger.info('share studyId: '+studyId+ ' usersCSV: '+usersCSV+' permissions: '+permissions)
 
         if (usersCSV && permissions) {
+            // Share on user by user basis
             logger.info('permission set')
             // Parse users list
             String[] users = usersCSV.split(",")

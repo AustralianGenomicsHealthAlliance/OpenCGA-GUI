@@ -5,12 +5,14 @@ import agha.opencga.gui.Role
 import agha.opencga.gui.RoleType
 import agha.opencga.gui.User
 import agha.opencga.gui.UserRole
+import agha.opencga.gui.UserService
 import grails.plugin.springsecurity.SecurityFilterPosition
 import grails.plugin.springsecurity.SpringSecurityUtils
 
 class BootStrap {
 
     OpenCGAService openCGAService
+    UserService userService
 
     def init = { servletContext ->
 
@@ -41,10 +43,8 @@ class BootStrap {
 
 
     def initAdmin() {
-        createUser('philip.wu@anu.edu.au', 'philip.wu@anu.edu.au', 'agha', RoleType.ADMIN)
-        openCGAService.userCreate('philip.wu@anu.edu.au', 'PhilipWu', 'agha', 'philip.wu@anu.edu.au')
-        //createUser('philipwu', 'philip.wu@anu.edu.au', 'agha', RoleType.ADMIN)
-        //createUser('hongyu', 'hongyu.ma@anu.edu.au', 'agha', RoleType.ADMIN)
+        userService.createUser('philip.wu@anu.edu.au', 'philip.wu@anu.edu.au', 'agha', RoleType.ADMIN)
+        userService.createUser('hongyu.ma@anu.edu.au', 'hongyu.ma@anu.edu.au', 'agha', RoleType.ADMIN)
     }
 
     def initSecurityRoles() {
@@ -53,24 +53,5 @@ class BootStrap {
             new Role(authority: rt.toString()).save(flush: true)
         }
     }
-
-    private void createUser(String username,String email, String password, RoleType roleType){
-        Role role = Role.findByAuthority(roleType.toString())
-        User user = User.findByUsername(username)
-        if (user == null) {
-            user = new User(username: username, email: email, displayName: username, enabled: true, password: password)
-            boolean saved = user.save(flush: true)
-            System.out.println("Saved? "+saved+" Errors saving user [" + username + "]: "+user.errors)
-        }
-
-        UserRole userRole = UserRole.findByUserAndRole(user, role)
-        if (userRole == null) {
-            userRole = new UserRole(user: user, role: role)
-            boolean saved = userRole.save(flush: true)
-            System.out.println("Saved? "+saved+" Errors saving user role [user:" + username + ", role:" + roleType.toString() + "]: "+userRole.errors)
-        }
-    }
-
-
 
 }

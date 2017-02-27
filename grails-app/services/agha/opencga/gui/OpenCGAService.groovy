@@ -606,22 +606,6 @@ class OpenCGAService {
         return getJsonResult(resp.json).get(0)
     }
 
-    // /{version}/analysis/variant/index
-    def analysisVariantIndex(String sessionId, List fileIds, Boolean annotate=Boolean.TRUE, Boolean calculateStats=Boolean.TRUE) {
-
-        logger.info('analysisVariantIndex')
-
-        String url = buildOpencgaRestUrl('/analysis/variant/index?sid='+sessionId)
-        url += '&file='+fileIds.join(',')
-        url += '&annotate='+annotate
-        url += '&calculateStats='+calculateStats
-
-        RestBuilder rest = new RestBuilder()
-        RestResponse resp = rest.get(url)
-
-        logger.info('resp.json='+resp.json)
-        return resp.json
-    }
 
     def linkFileAndIndex(String sessionId, File file, String studyId) {
 
@@ -632,6 +616,52 @@ class OpenCGAService {
         if (fileJson.bioformat == 'VARIANT') {
             analysisVariantIndex(sessionId, [fileId])
         }
+    }
+
+    def filesDelete(String sessionId, String fileId) {
+
+        String url = buildOpencgaRestUrl('/files/'+fileId+'/delete?sid='+sessionId)
+
+        RestBuilder rest = new RestBuilder()
+        RestResponse resp = rest.get(url)
+
+        return getJsonResult(resp.json).get(0)
+
+    }
+
+
+    // /{version}/analysis/variant/index
+    def analysisVariantIndex(String sessionId, List fileIds, Boolean annotate=Boolean.TRUE, Boolean calculateStats=Boolean.FALSE) {
+
+        logger.info('analysisVariantIndex')
+
+        String url = buildOpencgaRestUrl('/analysis/variant/index?sid='+sessionId)
+        url += '&file='+fileIds.join(',')
+        url += '&annotate='+annotate
+        url += '&calculateStats='+calculateStats
+        url += '&overwrite=true'
+
+        logger.info('url='+url)
+        RestBuilder rest = new RestBuilder()
+        RestResponse resp = rest.get(url)
+
+        logger.info('resp.json='+resp.json)
+        return resp.json
+    }
+
+
+    def analysisVariantQuery(String sessionId, String studyId, String region) {
+
+        logger.info('analysisVariantQuery - region: '+region)
+
+        String url = buildOpencgaRestUrl('/analysis/variant/query?sid='+sessionId)
+        url += '&studies='+studyId
+        url += '&region='+region
+
+        RestBuilder rest = new RestBuilder()
+        RestResponse resp = rest.get(url)
+
+        return getJsonResult(resp.json)
     }
 
     /**

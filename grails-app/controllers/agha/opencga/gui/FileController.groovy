@@ -1,7 +1,6 @@
 package agha.opencga.gui
 
 import grails.plugin.springsecurity.annotation.Secured
-import groovy.io.FileType
 import org.apache.log4j.Logger
 import org.grails.web.json.JSONObject
 import org.springframework.http.HttpStatus
@@ -17,9 +16,9 @@ import javax.servlet.http.HttpServletRequest
  * @author Philip Wu
  */
 @Secured(value=["IS_AUTHENTICATED_FULLY"])
-class UploadController {
+class FileController {
 
-    Logger logger = Logger.getLogger(UploadController.class)
+    Logger logger = Logger.getLogger(FileController.class)
 
     //def grailsApplication
     OpenCGAService openCGAService
@@ -209,6 +208,26 @@ class UploadController {
 
         // Delete the temporary folder
         dir.delete()
+    }
+
+    /**
+     * Doesn't work because OpenCGA doesn't allow retrying of annotations
+     * @return
+     */
+    def reanalyze() {
+
+        logger.info('studyId: ' +params.studyId+ ' fileId: '+params.fileId)
+
+        String sessionId = openCGAService.loginCurrentUser()
+        openCGAService.analysisVariantIndex(sessionId, [params.fileId])
+        redirect (controller:'study', action: 'show', params:[id: params.studyId])
+    }
+
+    def delete() {
+        logger.info('deleting file: '+params.fileId)
+        String sessionId = openCGAService.loginCurrentUser()
+        openCGAService.filesDelete(sessionId, params.fileId)
+        redirect (controller:'study', action: 'show', params:[id: params.studyId])
     }
 
 }

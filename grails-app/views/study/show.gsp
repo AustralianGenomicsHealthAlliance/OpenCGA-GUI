@@ -46,6 +46,11 @@
           dialog.dialog( "open" );
         });
 
+        $( "#variantSearchBtn" ).button().on( "click", function() {
+          window.location = '${createLink(controller:"variantSearch", action:"index", params:[studyId: study.id])}';
+        });
+
+
         $('span.aclMember').mouseover(function(event) {
             $(this).find('img').show();
         });
@@ -153,6 +158,12 @@
         #fine-uploader-manual-trigger .qq-uploader .qq-total-progress-bar-container {
             width: 60%;
         }
+
+        .delete {
+            border: 1px solid gray;
+            border-radius: 5px;
+            cursor: pointer;
+        }
     </style>
 
 
@@ -165,6 +176,8 @@
             <div>
                 <g:if test="${canShare}">
                     <button id="shareBtn">Share</button>
+
+                    <button id="variantSearchBtn">Variant Search</button>
                 </g:if>
             </div>
 
@@ -172,6 +185,7 @@
                 <g:form name="shareForm" action="share">
                     <div>
                         User emails:
+                        <p style="color: gray;">To share with all AGHA members, enter the asterik character: *</p>
                         <g:textField name="users" size="50" />
                     </div>
                     <br/>
@@ -201,7 +215,7 @@
                                 <span class="aclMember">
                                     ${user.member?.encodeAsHTML()}
                                     <g:if test="${canShare}">
-                                        <asset:image src="skin/delete.png" style="border: 1px solid gray; border-radius: 5px; cursor: pointer; display:none;" user="${user.member}" onclick="removeAccess(this, ${study.id});" />
+                                        <asset:image src="skin/delete.png" class="delete" style="display:none;" user="${user.member}" onclick="removeAccess(this, ${study.id});" />
                                     </g:if>
                                 </span>
 
@@ -222,9 +236,10 @@
                             <th>Format</th>
                             <th>Size</th>
                             <th>Indexed</th>
+                            <th></th>
                         </tr>
                         <g:each in="${ files }" var="file">
-                            <g:if test="${file.type == 'FILE' && file.format=='VCF'}">
+                            <g:if test="${file.type == 'FILE' && (file.format=='VCF' || file.format=='BAM' || file.format=='FASTQ')}">
                                 <tr>
                                     <td>
                                         <g:link controller="download" action="download" params="[id: file.id]">
@@ -240,6 +255,12 @@
                                     <td>
                                         ${file.index.status.name}
                                     </td>
+                                    <td>
+                                        <g:link controller="file" action="delete" params="[fileId: file.id, studyId: study.id]">
+                                            <asset:image src="skin/delete.png" class="delete" />
+                                        </g:link>
+                                    </td>
+
                                 </tr>
                             </g:if>
                         </g:each>
@@ -271,7 +292,7 @@
             element: document.getElementById('fine-uploader-manual-trigger'),
             template: 'qq-template-manual-trigger',
             request: {
-                endpoint: '${createLink(controller:"upload", action:"fineuploader")}',
+                endpoint: '${createLink(controller:"file", action:"fineuploader")}',
                 params: {studyId: ${study.id} }
             },
             thumbnails: {
@@ -287,7 +308,7 @@
                     enabled:true
                 },
                 success: {
-                    endpoint: '${createLink(controller:"upload", action:"fineuploaderChunkSuccess")}'
+                    endpoint: '${createLink(controller:"file", action:"fineuploaderChunkSuccess")}'
                 }
             },
             resume: { enabled: true },
@@ -298,7 +319,7 @@
                     console.log('deleting server side file from cancelled uploads for id: '+id)
                     var uuid = manualUploader.getUuid(id)
                     console.log('uuid='+uuid);
-                    $.post("${createLink(controller:'upload', action:'cancel')}?qquuid="+uuid)
+                    $.post("${createLink(controller:'file', action:'cancel')}?qquuid="+uuid)
                 },
                 onAllComplete: function(succeeded, failed) {
                     console.log('succeeded: '+succeeded);
