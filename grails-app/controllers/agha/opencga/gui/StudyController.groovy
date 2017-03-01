@@ -43,6 +43,11 @@ class StudyController {
 
         def studyFiles = openCGAService.studyFiles(sessionId, studyId)
 
+        def cohorts = openCGAService.cohortsSearch(sessionId, studyId)
+
+        List cohortAllFiles = getCohortAllFiles(sessionId, studyFiles, cohorts)
+
+
         // Does this study have files?
         Boolean hasFiles = Boolean.FALSE
         studyFiles.each {
@@ -69,8 +74,43 @@ class StudyController {
         }
 
 
-        [study: studyInfo, files: studyFiles, hasFiles: hasFiles, canShare: canShare]
+        [study: studyInfo, cohorts: cohorts, files: cohortAllFiles, hasFiles: hasFiles, canShare: canShare]
 
+    }
+
+    private List getCohortAllFiles(String sessionId, def studyFiles, def cohorts) {
+
+        // Find cohort ALL
+        def cohortAll = null
+        for (def cohort: cohorts) {
+            if (cohort.name=='ALL') {
+                cohortAll = cohort
+                break
+            }
+        }
+        logger.info('cohortAll:'+cohortAll)
+
+        Set cohortAllSampleIds = new HashSet()
+        if (cohortAll) {
+            // For cohort ALL, find all the samples
+            def samples = openCGAService.cohortsSamples(sessionId,cohortAll.id.toString())
+            for (def sample: samples) {
+                cohortAllSampleIds << sample.id
+            }
+        }
+
+        // Cohort ALL files
+        List cohortAllFiles = []
+        for (def studyFile: studyFiles) {
+
+            for (def sampleId: studyFile.sampleIds) {
+                if (cohortAllSampleIds.contains(sampleId)) {
+                    cohortAllFiles << studyFile
+                }
+            }
+        }
+
+        return cohortAllFiles
     }
 
     /**

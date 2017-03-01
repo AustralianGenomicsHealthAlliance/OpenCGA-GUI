@@ -119,6 +119,14 @@
 
 
 <div id="content" role="main">
+    <div class="navPath">
+        <g:link controller="study" action="show" params="[id: study.id]">
+            ${study.name.encodeAsHTML()}
+        </g:link>
+        &gt; ${cohort.name}
+    </div>
+
+
     <section class="row colset-2-its">
 
         <g:if test="${cohort}">
@@ -154,7 +162,7 @@
                                         ${file.index.status.name}
                                     </td>
                                     <td>
-                                        <g:link controller="file" action="delete" params="[fileId: file.id, studyId: studyId]">
+                                        <g:link controller="file" action="delete" params="[fileId: file.id, studyId: studyId, cohortId: cohort.id]">
                                             <asset:image src="skin/delete.png" class="delete" />
                                         </g:link>
                                     </td>

@@ -13,3 +13,9 @@
 *= require mobile
 *= require_self
 */
+
+.navPath {
+    padding: 10px;
+    background-color: #ECF1EF;
+    color: gray;
+}

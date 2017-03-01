@@ -64,7 +64,7 @@ class OpencgaHelper {
      * @return
      */
     def static getJsonResult(def json) {
-        logger.info('response: '+json?.response)
+        //logger.info('response: '+json?.response)
         if (json.response.get(0).errorMsg) {
             throw new Exception(json.response.get(0).errorMsg)
         } else {

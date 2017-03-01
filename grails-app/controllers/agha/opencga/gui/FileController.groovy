@@ -1,6 +1,8 @@
 package agha.opencga.gui
 
 import grails.plugin.springsecurity.annotation.Secured
+import htsjdk.variant.vcf.VCFFileReader
+import htsjdk.variant.vcf.VCFHeader
 import org.apache.log4j.Logger
 import org.grails.web.json.JSONObject
 import org.springframework.http.HttpStatus
@@ -24,7 +26,7 @@ class FileController {
     OpenCGAService openCGAService
 
     def fineuploader() {
-        logger.debug('====== fineuploader =====')
+        logger.info('====== fineuploader =====')
         logger.info('qquuid:'+params.qquuid)
         logger.debug('qqpartindex: '+params.qqpartindex)
         logger.debug('qqpartbyteoffset: '+params.qqpartbyteoffset)
@@ -32,9 +34,9 @@ class FileController {
         logger.debug('qqtotalparts: '+params.qqtotalparts)
         logger.debug('qqfilename: '+params.qqfilename)
         logger.debug('qqchunksize: '+params.qqchunksize)
-        logger.debug('studyId: '+params.studyId)
+        logger.info('studyId: '+params.studyId)
         logger.debug('qqresume: '+params.qqresume)
-
+        logger.info('cohortId: '+params.cohortId)
 
         File tmpFile = writeFile(request, params)
 
@@ -47,10 +49,16 @@ class FileController {
                 destFile.delete()
             }
             boolean fileMoved = tmpFile.renameTo(destFile)
-            logger.debug('fileMoved: '+fileMoved)
+            logger.info('fileMoved: '+fileMoved)
+
             // Register the file with OpenCGA
             String sessionId = openCGAService.loginCurrentUser()
-            openCGAService.linkFileAndIndex(sessionId, destFile, params.studyId)
+            def fileJson = openCGAService.linkFileAndIndex(sessionId, destFile, params.studyId)
+
+            if (params.cohortId) {
+                logger.info('fileId: '+fileJson.id)
+                openCGAService.addFileToCohort(sessionId, params.cohortId, params.studyId, destFile, fileJson.id.toString())
+            }
         }
 
         JSONObject json = new JSONObject()
@@ -75,7 +83,8 @@ class FileController {
         logger.debug('qqfilename: '+params.qqfilename)
         logger.debug('qqchunksize: '+params.qqchunksize)
 
-        logger.debug('studyId: '+params.studyId)
+        logger.info('studyId: '+params.studyId)
+        logger.info('cohortId: '+params.cohortId)
 
 
         File destFolder = createProjectStudyFolder(params.studyId)
@@ -88,7 +97,12 @@ class FileController {
 
         // Register the file with OpenCGA
         String sessionId = openCGAService.loginCurrentUser()
-        openCGAService.linkFileAndIndex(sessionId, destFile, params.studyId)
+        def fileJson = openCGAService.linkFileAndIndex(sessionId, destFile, params.studyId)
+
+        if (params.cohortId) {
+            openCGAService.addFileToCohort(sessionId, params.cohortId, params.studyId, destFile, fileJson.id.toString())
+        }
+
 
         JSONObject json = new JSONObject()
         json.put('success', Boolean.TRUE)
@@ -227,7 +241,11 @@ class FileController {
         logger.info('deleting file: '+params.fileId)
         String sessionId = openCGAService.loginCurrentUser()
         openCGAService.filesDelete(sessionId, params.fileId)
-        redirect (controller:'study', action: 'show', params:[id: params.studyId])
+        if (params.cohortId) {
+            redirect (controller:'cohort', action: 'show', params:[id: params.cohortId, studyId: params.studyId])
+        } else {
+            redirect (controller:'study', action: 'show', params:[id: params.studyId])
+        }
     }
 
 }

@@ -17,6 +17,10 @@
         $('#shareForm').submit();
     }
 
+    function submitCohortDialog() {
+        $('#cohortForm').submit();
+    }
+
     function removeAccess(el, studyId) {
         var user = $(el).attr('user');
         console.log('removingAccess: '+user);
@@ -42,8 +46,26 @@
           }
         });
 
+        cohortDialog = $( "#createCohortDlg" ).dialog({
+          autoOpen: false,
+          height: 250,
+          width: 550,
+          modal: true,
+          buttons: {
+            "Create cohort": submitCohortDialog,
+            Cancel: function() {
+              cohortDialog.dialog( "close" );
+            }
+          }
+        });
+
+
         $( "#shareBtn" ).button().on( "click", function() {
           dialog.dialog( "open" );
+        });
+
+        $( "#createCohortBtn" ).button().on( "click", function() {
+          cohortDialog.dialog( "open" );
         });
 
         $( "#variantSearchBtn" ).button().on( "click", function() {
@@ -178,6 +200,8 @@
                     <button id="shareBtn">Share</button>
 
                     <button id="variantSearchBtn">Variant Search</button>
+
+                    <button id="createCohortBtn">Create Cohort</button>
                 </g:if>
             </div>
 
@@ -198,6 +222,18 @@
                 </g:form>
             </div>
 
+            <div id="createCohortDlg" title="Create Cohort" style="display:none">
+
+                <g:form name="cohortForm" controller="cohort" action="create">
+                    <div>
+                        Cohort name:
+                        <g:textField name="name" size="50" />
+                    </div>
+
+                    <g:hiddenField name="studyId" value="${study.id}" />
+                </g:form>
+            </div>
+
             <fieldset>
                 <legend>Details</legend>
                 <table>
@@ -205,25 +241,51 @@
                         <td>Owner:</td>
                         <td>${OpencgaHelper.parseProjectOwnerFromUri(study.uri)}</td>
                     </tr>
-                    <tr>
-                        <td>Shared with:</td>
-                        <td>
-                            <g:each in="${study.acl}" var="user" status="i">
-                                <g:if test="${ i > 0}">
-                                    ,
-                                </g:if>
-                                <span class="aclMember">
-                                    ${user.member?.encodeAsHTML()}
-                                    <g:if test="${canShare}">
-                                        <asset:image src="skin/delete.png" class="delete" style="display:none;" user="${user.member}" onclick="removeAccess(this, ${study.id});" />
+                    <g:if test="${study.acl}">
+                        <tr>
+                            <td>Shared with:</td>
+                            <td>
+                                <g:each in="${study.acl}" var="user" status="i">
+                                    <g:if test="${ i > 0}">
+                                        ,
                                     </g:if>
-                                </span>
+                                    <span class="aclMember">
+                                        ${user.member?.encodeAsHTML()}
+                                        <g:if test="${canShare}">
+                                            <asset:image src="skin/delete.png" class="delete" style="display:none;" user="${user.member}" onclick="removeAccess(this, ${study.id});" />
+                                        </g:if>
+                                    </span>
 
-                            </g:each>
+                                </g:each>
 
-                        </td>
-                    </tr>
+                            </td>
+                        </tr>
+                    </g:if>
                 </table>
+            </fieldset>
+
+            <fieldset>
+                <legend>Cohorts</legend>
+
+                <g:if test="${cohorts}">
+                    <table>
+                        <tr>
+                            <th>Name</th>
+                        </tr>
+                        <g:each in="${cohorts}" var="cohort">
+                            <g:if test="${cohort.name != 'ALL'}" >
+                            <tr>
+                                <td>
+                                    <g:link controller="cohort" action="show" params="[id: cohort.id, studyId: study.id]">
+                                        ${cohort.name.encodeAsHTML()}
+                                    </g:link>
+                                </td>
+
+                            </tr>
+                            </g:if>
+                        </g:each>
+                    </table>
+                </g:if>
             </fieldset>
 
             <fieldset>

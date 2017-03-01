@@ -5,6 +5,13 @@ import grails.plugin.springsecurity.SpringSecurityService
 import grails.plugins.rest.client.RestBuilder
 import grails.plugins.rest.client.RestResponse
 import grails.transaction.Transactional
+import htsjdk.samtools.BAMFileReader
+import htsjdk.samtools.DefaultSAMRecordFactory
+import htsjdk.samtools.SAMFileHeader
+import htsjdk.samtools.SAMReadGroupRecord
+import htsjdk.samtools.ValidationStringency
+import htsjdk.variant.vcf.VCFFileReader
+import htsjdk.variant.vcf.VCFHeader
 import org.apache.log4j.Logger
 import org.grails.web.json.JSONArray
 import org.grails.web.json.JSONObject
@@ -602,7 +609,7 @@ class OpenCGAService {
         RestBuilder rest = new RestBuilder()
         RestResponse resp = rest.get(url)
 
-        logger.info('resp.json='+resp.json)
+        //logger.info('resp.json='+resp.json)
         return getJsonResult(resp.json).get(0)
     }
 
@@ -611,11 +618,14 @@ class OpenCGAService {
 
         def fileJson = filesLink(sessionId, file, studyId)
         String fileId = fileJson.id
-
+        logger.info('linkFileAndIndex fileId: '+fileId)
         // Index and analyze file only if it's a variant
         if (fileJson.bioformat == 'VARIANT') {
             analysisVariantIndex(sessionId, [fileId])
         }
+
+        logger.info('END linkFileAndIndex')
+        return fileJson
     }
 
     def filesDelete(String sessionId, String fileId) {
@@ -627,6 +637,34 @@ class OpenCGAService {
 
         return getJsonResult(resp.json).get(0)
 
+    }
+
+    def filesUpdate(String sessionId, String fileId, Collection sampleIds) {
+
+        String url = buildOpencgaRestUrl('/files/'+fileId+'/update?sid='+sessionId)
+
+        JSONObject json = new JSONObject()
+        json.put('sampleIds', sampleIds.join(","))
+
+        RestBuilder rest = new RestBuilder()
+        RestResponse resp = rest.post(url) {
+            contentType('application/json')
+            body(json.toString())
+        }
+
+        return getJsonResult(resp.json)
+    }
+
+    def filesSearch(String sessionId, String studyId, Collection sampleIds) {
+
+        String url = buildOpencgaRestUrl('/files/search?sid='+sessionId)
+        url += '&study='+studyId
+        url += '&samples='+sampleIds.join(",")
+
+        RestBuilder rest = new RestBuilder()
+        RestResponse resp = rest.get(url)
+
+        return getJsonResult(resp.json)
     }
 
 
@@ -645,7 +683,7 @@ class OpenCGAService {
         RestBuilder rest = new RestBuilder()
         RestResponse resp = rest.get(url)
 
-        logger.info('resp.json='+resp.json)
+        //logger.info('resp.json='+resp.json)
         return resp.json
     }
 
@@ -662,6 +700,207 @@ class OpenCGAService {
         RestResponse resp = rest.get(url)
 
         return getJsonResult(resp.json)
+    }
+
+
+    def cohortsCreate(String sessionId, String name, String studyId) {
+        logger.info('create cohort: '+name+' studyId='+studyId)
+        String url = buildOpencgaRestUrl('/cohorts/create?sid='+sessionId)
+        url += '&study='+studyId
+
+        JSONObject json =  new JSONObject()
+        json.put('name', name)
+
+        RestBuilder rest = new RestBuilder()
+        RestResponse resp = rest.post(url) {
+            contentType('application/json')
+            body(json.toString())
+        }
+
+        logger.info('json response: '+resp.json)
+
+        return resp.json
+    }
+
+    def cohortsInfo(String sessionId, String cohortId) {
+
+        logger.info('cohortId: '+cohortId)
+        String url = buildOpencgaRestUrl('/cohorts/'+cohortId+'/info?sid='+sessionId)
+
+        RestBuilder rest = new RestBuilder()
+        RestResponse resp = rest.get(url)
+
+        return getJsonResult(resp.json).get(0)
+    }
+
+    /**
+     * Retrun the cohorts belonging to the specified study
+     * @param sessionId
+     * @param studyId
+     * @return
+     */
+    def cohortsSearch(String sessionId, String studyId) {
+        logger.info('cohort search: '+studyId)
+        String url = buildOpencgaRestUrl('/cohorts/search?sid='+sessionId)
+        url += '&study='+studyId
+
+        RestBuilder rest = new RestBuilder()
+        RestResponse resp = rest.get(url)
+
+        logger.info('resp.json='+resp.json)
+        return getJsonResult(resp.json)
+    }
+
+    def cohortsUpdate(String sessionId, String cohortId, Collection sampleIds) {
+
+        logger.info('cohort update cohortId: '+cohortId+' sampleIds='+sampleIds)
+        String url = buildOpencgaRestUrl('/cohorts/'+cohortId+'/update?sid='+sessionId)
+
+
+        JSONObject json =  new JSONObject()
+        json.put('samples', sampleIds.join(","))
+
+        RestBuilder rest = new RestBuilder()
+        RestResponse resp = rest.post(url) {
+            contentType('application/json')
+            body(json.toString())
+        }
+
+        logger.info('json response: '+resp.json)
+
+        return getJsonResult(resp.json)
+    }
+
+    def cohortsSamples(String sessionId, String cohortId) {
+
+        logger.info('cohort samples: '+cohortId)
+        String url = buildOpencgaRestUrl('/cohorts/'+cohortId+'/samples?sid='+sessionId)
+
+        RestBuilder rest = new RestBuilder()
+        RestResponse resp = rest.get(url)
+
+        logger.info('resp.json='+resp.json)
+        return getJsonResult(resp.json)
+    }
+
+    /**
+     * WARNING: Potential race condition here, since we are calling multiple REST api calls outside of a transaction.
+     * @param sessionId
+     * @param cohortId
+     * @param sampleIds
+     * @return
+     */
+    def cohortsAddSamples(String sessionId, String cohortId, Collection sampleIds) {
+        def cohort = cohortsInfo(sessionId, cohortId)
+        Set mergedSampleIds = cohort.samples as Set
+        mergedSampleIds.addAll(sampleIds)
+
+        cohortsUpdate(sessionId, cohortId,  mergedSampleIds)
+    }
+
+
+    def samplesSearch(String sessionId, String studyId, String name) {
+
+        logger.info('samples search name: '+name)
+        String url = buildOpencgaRestUrl('/samples/search?sid='+sessionId)
+        url += '&study='+studyId
+        url += '&name='+name
+
+        RestBuilder rest = new RestBuilder()
+        RestResponse resp = rest.get(url)
+
+        logger.info('resp.json='+resp.json)
+        return getJsonResult(resp.json)
+
+    }
+
+    def samplesCreate(String sessionId, String studyId, String name) {
+
+        logger.info('create sample: '+name+' studyId='+studyId)
+        String url = buildOpencgaRestUrl('/samples/create?sid='+sessionId)
+        url += '&study='+studyId
+
+        JSONObject json =  new JSONObject()
+        json.put('name', name)
+
+        RestBuilder rest = new RestBuilder()
+        RestResponse resp = rest.post(url) {
+            contentType('application/json')
+            body(json.toString())
+        }
+
+        logger.info('json response: '+resp.json)
+
+        return getJsonResult(resp.json).get(0)
+
+    }
+
+    def searchOrCreateSample(String sessionId, studyId, sampleName) {
+
+        def samples = samplesSearch(sessionId, studyId, sampleName)
+        logger.info('samples json='+samples)
+        String sampleId = samples?.get(0)?.id
+
+        if (sampleId == null) {
+            // Create the sample
+            def sampleJson = samplesCreate(sessionId, studyId, sampleName)
+            sampleId = sampleJson.id
+        }
+
+        return sampleId
+    }
+
+    def addFileToCohort(String sessionId, String cohortId, String studyId, File file, String fileId) {
+
+        logger.info(' addFileToCohort fileId: '+fileId+ ' cohortId: '+cohortId+ ' studyId: '+studyId+' file: '+file)
+
+        def fileJson = this.fileInfo(sessionId, fileId)
+        logger.info('file format: '+fileJson.format)
+
+        // Create the samples associated with the file
+        Set<String> sampleIds = new HashSet()
+        if (cohortId) {
+            // Grab the sample name from the VCF
+            if (fileJson.format == 'VCF') {
+                // Process as VCF
+                VCFFileReader vcfFileReader = new VCFFileReader(file, false)
+                VCFHeader vcfHeader = vcfFileReader.getFileHeader()
+                Set<String> sampleNames = vcfHeader.getGenotypeSamples() as Set
+                logger.info('sampleNames: ' + sampleNames)
+
+                // Search for existing samples
+                for (String sampleName: sampleNames) {
+                    String sampleId = searchOrCreateSample(sessionId, studyId, sampleName)
+                    logger.info(sampleId)
+                    sampleIds << sampleId
+                }
+            } else if (fileJson.format == 'BAM') {
+                logger.info('reading BAM file')
+                // Process BAM
+                BAMFileReader bamReader = new BAMFileReader(file, null, false, false, ValidationStringency.SILENT, DefaultSAMRecordFactory.getInstance())
+                SAMFileHeader samFileHeader = bamReader.getFileHeader()
+                logger.info('attributes: '+samFileHeader.attributes)
+                List<SAMReadGroupRecord> readGroups = samFileHeader.readGroups
+                if (readGroups) {
+                    SAMReadGroupRecord readGroup = readGroups.get(0)
+                    String sampleName = readGroup.getSample()
+                    logger.info('sampleName: '+sampleName)
+                    if (sampleName) {
+                        String sampleId = searchOrCreateSample(sessionId, studyId, sampleName)
+                        sampleIds << sampleId
+                    }
+                }
+            }
+
+            if (sampleIds) {
+                // Link samples to cohort
+                cohortsAddSamples(sessionId, cohortId, sampleIds)
+
+                // Link file to sample
+                filesUpdate(sessionId, fileId, sampleIds)
+            }
+
+        }
     }
 
     /**
