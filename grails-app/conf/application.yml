@@ -38,13 +38,25 @@ endpoints:
         enabled: true
 
 ---
-opencga.url: "http://localhost:8080/opencga-1.0.0-final"
-opencga.rest.url: "http://localhost:8080/opencga-1.0.0-final/webservices/rest/v1"
-opencga.password: 'agha'
-opencga.agha.user: 'agha'
-opencga.bin: '/opt/opencga/bin'
-datastore.path: '/opt/opencga/datastore'
-datastore.tmp.path: '/opt/opencga/datastore/tmp'
+environments:
+    development:
+        opencga.url: "http://localhost:8080/opencga-1.0.0-final"
+        opencga.rest.url: "http://localhost:8080/opencga-1.0.0-final/webservices/rest/v1"
+        opencga.password: 'agha'
+        opencga.agha.user: 'agha'
+        opencga.bin: '/opt/opencga/bin'
+        datastore.path: '/opt/opencga/datastore'
+        datastore.tmp.path: '/opt/opencga/datastore/tmp'
+    test:
+        opencga.url: "http://localhost:9090/opencga-1.0.0-final"
+        opencga.rest.url: "http://localhost:9090/opencga-1.0.0-final/webservices/rest/v1"
+        opencga.password: 'agha'
+        opencga.agha.user: 'agha'
+        opencga.bin: '/opt/opencga/bin'
+        datastore.path: '/mnt/opencga/datastore'
+        datastore.tmp.path: '/mnt/opencga/datastore/tmp'
+    production:
+
 
 
 ---

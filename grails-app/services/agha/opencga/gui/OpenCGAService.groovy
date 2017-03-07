@@ -669,7 +669,7 @@ class OpenCGAService {
 
 
     // /{version}/analysis/variant/index
-    def analysisVariantIndex(String sessionId, List fileIds, Boolean annotate=Boolean.TRUE, Boolean calculateStats=Boolean.FALSE) {
+    def analysisVariantIndex(String sessionId, List fileIds, Boolean annotate=Boolean.FALSE, Boolean calculateStats=Boolean.FALSE) {
 
         logger.info('analysisVariantIndex')
 
