@@ -657,14 +657,17 @@ class OpenCGAService {
 
     def filesSearch(String sessionId, String studyId, Collection sampleIds) {
 
-        String url = buildOpencgaRestUrl('/files/search?sid='+sessionId)
-        url += '&study='+studyId
-        url += '&samples='+sampleIds.join(",")
+        if (sampleIds) {
+            String url = buildOpencgaRestUrl('/files/search?sid='+sessionId)
+            url += '&study='+studyId
+            url += '&sample='+sampleIds.join(",")
 
-        RestBuilder rest = new RestBuilder()
-        RestResponse resp = rest.get(url)
-
-        return getJsonResult(resp.json)
+            RestBuilder rest = new RestBuilder()
+            RestResponse resp = rest.get(url)
+            return getJsonResult(resp.json)
+        } else {
+            return []
+        }
     }
 
 
@@ -848,6 +851,18 @@ class OpenCGAService {
         }
 
         return sampleId
+    }
+
+    def samplesInfo(String sessionId, String sampleId) {
+
+        String url = buildOpencgaRestUrl('/samples/'+sampleId+'/info?sid='+sessionId)
+
+        RestBuilder rest = new RestBuilder()
+        RestResponse resp = rest.get(url)
+
+        logger.info('resp.json='+resp.json)
+        return getJsonResult(resp.json).get(0)
+
     }
 
     def addFileToCohort(String sessionId, String cohortId, String studyId, File file, String fileId) {

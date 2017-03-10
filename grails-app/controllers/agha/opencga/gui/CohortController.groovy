@@ -34,6 +34,7 @@ class CohortController {
         def samples = openCGAService.cohortsSamples(sessionId, params.id)
 
         List sampleIds = samples.collect { it.id }
+        logger.info('sampleIds: '+sampleIds)
 
         // Get all files by sampleIds
         def files = openCGAService.filesSearch(sessionId, params.studyId, sampleIds)

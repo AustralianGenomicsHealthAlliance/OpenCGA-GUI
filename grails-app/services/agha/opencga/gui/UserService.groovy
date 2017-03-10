@@ -25,6 +25,7 @@ class UserService {
     public void createLocalUser(String username,String email, String password, RoleType roleType){
         Role role = Role.findByAuthority(roleType.toString())
         User user = User.findByUsername(username)
+        System.out.println('existing user='+user)
         if (user == null) {
             user = new User(username: username, email: email, displayName: username, enabled: true, password: password)
             boolean saved = user.save(flush: true)

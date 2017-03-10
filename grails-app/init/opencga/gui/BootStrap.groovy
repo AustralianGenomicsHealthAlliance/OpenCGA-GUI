@@ -17,15 +17,23 @@ class BootStrap {
     def init = { servletContext ->
 
         initSecurityRoles()
-        initAdmin()
+
 
         // Shibboleth configuration
         environments {
             development {
+                Thread.start {
+                    Thread.sleep(5000)
+                    initAdmin()
+                }
             }
             test {
-                System.out.println('setting the shibAuthFilter')
-                SpringSecurityUtils.clientRegisterFilter('shibAuthFilter', SecurityFilterPosition.PRE_AUTH_FILTER.order + 10)
+                //System.out.println('setting the shibAuthFilter')
+                //SpringSecurityUtils.clientRegisterFilter('shibAuthFilter', SecurityFilterPosition.PRE_AUTH_FILTER.order + 10)
+                Thread.start {
+                    Thread.sleep(15000)
+                    initAdmin()
+                }
             }
             production {
                 SpringSecurityUtils.clientRegisterFilter('shibAuthFilter', SecurityFilterPosition.PRE_AUTH_FILTER.order + 10)
@@ -44,6 +52,7 @@ class BootStrap {
 
     def initAdmin() {
         userService.createUser('philip.wu@anu.edu.au', 'philip.wu@anu.edu.au', 'agha', RoleType.ADMIN)
+        userService.createUser('dan.andrews@anu.edu.au', 'dan.andrews@anu.edu.au', 'agha', RoleType.ADMIN)
         userService.createUser('hongyu.ma@anu.edu.au', 'hongyu.ma@anu.edu.au', 'agha', RoleType.ADMIN)
     }
 

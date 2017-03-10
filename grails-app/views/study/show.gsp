@@ -295,6 +295,7 @@
                     <table>
                         <tr>
                             <th>Name</th>
+                            <th>Sample</th>
                             <th>Format</th>
                             <th>Size</th>
                             <th>Indexed</th>
@@ -307,6 +308,11 @@
                                         <g:link controller="download" action="download" params="[id: file.id]">
                                             ${file.name?.encodeAsHTML()}
                                         </g:link>
+                                    </td>
+                                    <td>
+                                        <g:each in="${file.sampleIds}" var="sampleId">
+                                            <g:sampleName sampleId="${sampleId?.toString()}" />
+                                        </g:each>
                                     </td>
                                     <td>${file.format?.encodeAsHTML()}</td>
                                     <td>

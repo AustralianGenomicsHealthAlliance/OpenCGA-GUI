@@ -86,7 +86,7 @@
 .qq-uploader {
     position: relative;
     min-height: 200px;
-    max-height: 490px;
+    max-height: 560px;
     overflow-y: hidden;
     width: inherit;
     border-radius: 6px;
@@ -315,6 +315,7 @@ INPUT.qq-edit-filename.qq-editing {
 .qq-thumbnail-selector {
     vertical-align: middle;
     margin-right: 12px;
+    max-width: 30px;
 }
 
 
