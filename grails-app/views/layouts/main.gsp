@@ -37,9 +37,15 @@
                 </a>
             </div>
             <div class="navbar-collapse collapse" aria-expanded="false">
-                <ul class="nav navbar-nav navbar-right">
+                <div style="float:right; margin:0; margin-top: 20px; color: white;">
                     <g:pageProperty name="page.nav" />
-                </ul>
+                    <sec:ifLoggedIn>
+                        Logged in: <sec:loggedInUserInfo field='username'/>
+                    </sec:ifLoggedIn>
+                    <sec:ifNotLoggedIn>
+                        <g:link controller='login' action='auth'>Login</g:link>
+                    </sec:ifNotLoggedIn>
+                </div>
             </div>
         </div>
     </div>

@@ -53,17 +53,28 @@
 
 
 <div id="content" role="main">
+
+    <div class="navPath">
+        <g:link controller="project" action="index" >
+            Home
+        </g:link>
+        &gt;
+        ${project?.name?.encodeAsHTML()}
+
+
+    </div>
+
     <section class="row colset-2-its">
 
         <g:if test="${project}">
             <h1>Flagship - ${project.name?.encodeAsHTML()}</h1>
 
+            <div>
+                <button id="createStudy">Create new Study</button>
+            </div>
+
             <fieldset>
                 <legend>Studies</legend>
-
-                <div>
-                    <button id="createStudy">Create new Study</button>
-                </div>
 
                 <g:if test="${project.studies}">
                     <table>

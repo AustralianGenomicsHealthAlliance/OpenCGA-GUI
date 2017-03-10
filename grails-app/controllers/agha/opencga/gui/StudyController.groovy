@@ -1,5 +1,6 @@
 package agha.opencga.gui
 
+import grails.plugin.springsecurity.SpringSecurityService
 import grails.plugin.springsecurity.annotation.Secured
 import org.apache.log4j.Logger
 import org.grails.web.json.JSONObject
@@ -17,6 +18,7 @@ class StudyController {
 
     OpenCGAService openCGAService
     UserService userService
+    SpringSecurityService springSecurityService
 
 
     def index() {
@@ -42,6 +44,8 @@ class StudyController {
         logger.info('studyInfo: '+studyInfo)
 
         def studyFiles = openCGAService.studyFiles(sessionId, studyId)
+
+        def project = openCGAService.findProjectByStudyId(sessionId, studyId, user.username)
 
         def cohorts = openCGAService.cohortsSearch(sessionId, studyId)
 
@@ -74,7 +78,7 @@ class StudyController {
         }
 
 
-        [study: studyInfo, cohorts: cohorts, files: cohortAllFiles, hasFiles: hasFiles, canShare: canShare]
+        [study: studyInfo, project: project, cohorts: cohorts, files: cohortAllFiles, hasFiles: hasFiles, canShare: canShare]
 
     }
 

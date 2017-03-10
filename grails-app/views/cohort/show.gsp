@@ -120,10 +120,18 @@
 
 <div id="content" role="main">
     <div class="navPath">
+        <g:link controller="project" action="index" >
+            Home
+        </g:link>
+        &gt;
+        <g:link controller="project" action="show" params="[id: project.id]">
+            ${project?.name?.encodeAsHTML()}
+        </g:link>
+        &gt;
         <g:link controller="study" action="show" params="[id: study.id]">
             ${study.name.encodeAsHTML()}
         </g:link>
-        &gt; ${cohort.name}
+        &gt; ${cohort.name.encodeAsHTML()}
     </div>
 
 

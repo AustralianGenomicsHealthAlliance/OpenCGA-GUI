@@ -254,6 +254,31 @@ class OpenCGAService {
         return resp.json
     }
 
+    /**
+     * Find the project for a given study ID
+     * @param sessionId
+     * @param studyId
+     * @param user
+     * @return
+     */
+    def findProjectByStudyId(String sessionId, String studyId, String user) {
+        //logger.info('findProjectByStudyId: '+studyId+' user: '+user)
+        if (studyId) {
+            List projects = accessibleUserProjects(sessionId, user)
+            //logger.info('projects: '+projects)
+            for (def project : projects) {
+                for (def study : project.studies) {
+                    //logger.info('study.id='+study.id+' studyId='+studyId)
+                    if (study.id == studyId?.toInteger()) {
+                        return project
+                    }
+                }
+            }
+        }
+
+        return null
+    }
+
     def projectInfo(String sessionId, String projectId) {
 
         String url = buildOpencgaRestUrl('/projects/'+projectId+'/info?sid='+sessionId)

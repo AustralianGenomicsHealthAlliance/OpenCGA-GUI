@@ -29,10 +29,9 @@ pre {
 /* customizing bootstrap nav bar */
 .navbar {
     margin-bottom: 0px;
-    padding-right: 110px;
 }
 .navbar .container {
-    margin: 10px;
+    margin: 5px;
 }
 .navbar-default a {
     color: #ffffff !important;

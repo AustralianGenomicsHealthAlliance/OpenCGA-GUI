@@ -1,5 +1,6 @@
 package agha.opencga.gui
 
+import grails.plugin.springsecurity.SpringSecurityService
 import grails.plugin.springsecurity.annotation.Secured
 import org.apache.log4j.Logger
 
@@ -13,6 +14,7 @@ class CohortController {
     Logger logger = Logger.getLogger(CohortController.class)
 
     OpenCGAService openCGAService
+    SpringSecurityService springSecurityService
 
     def create() {
 
@@ -24,11 +26,13 @@ class CohortController {
 
     def show() {
         logger.info('cohortId: '+params.id+' studyId: '+params.studyId)
-
+        def user = springSecurityService.currentUser
         String sessionId = openCGAService.loginCurrentUser()
         def cohortInfo = openCGAService.cohortsInfo(sessionId, params.id)
 
         def study = openCGAService.studyInfo(sessionId, params.studyId)
+
+        def project = openCGAService.findProjectByStudyId(sessionId, params.studyId, user.username)
 
         // Get all samples in this cohort
         def samples = openCGAService.cohortsSamples(sessionId, params.id)
@@ -47,6 +51,6 @@ class CohortController {
             }
         }
 
-        [cohort:cohortInfo, studyId: params.studyId, study: study, files: files, hasFiles: hasFiles]
+        [cohort:cohortInfo, studyId: params.studyId, study: study, project: project, files: files, hasFiles: hasFiles]
     }
 }
