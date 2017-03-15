@@ -67,7 +67,7 @@ class OpenCGAService {
      * @return
      */
     public String login(String username, String password) {
-        logger.info("login")
+        logger.debug("login")
 
         Map passwordMap = ['password': password]
         String json = (passwordMap as JSON).toString()
@@ -79,10 +79,10 @@ class OpenCGAService {
             body(json)
         }
 
-        logger.info('json response: '+resp.json)
+        logger.debug('json response: '+resp.json)
 
         String sessionId = resp.json?.response?.get(0)?.result?.get(0)?.sessionId
-        logger.info('sessionId: '+sessionId)
+        logger.debug('sessionId: '+sessionId)
         return sessionId
     }
 
@@ -121,14 +121,14 @@ class OpenCGAService {
 //        List createUserCommand = ['sh', '-c', script, 'users', 'create', '-u', userId, '--email', email, '--name', name, '--user-password', password]
 //        List createUserCommand = ['sh', '-c', script, userId, email, name]
 //        String std = CliExec.execCommand(createUserCommand)
-//        logger.info('std: '+std)
+//        logger.debug('std: '+std)
 //        // Password command
 //        String adminPassword = grailsApplication.config.opencga.password
 //        List passwordCommand = ['echo', adminPassword]
 //        def p = createUserCommand.execute()
         //def p = ['sh', '-c', script+' users create -u '+userId+' --email '+email+' --name '+name+' --user-password agha'].execute()
         //def std = p.waitFor()
-//        logger.info('std: '+p.text)
+//        logger.debug('std: '+p.text)
 
     }
 
@@ -156,7 +156,7 @@ class OpenCGAService {
             body(json.toString())
         }
 
-        logger.info('resp='+resp.json)
+        logger.debug('resp='+resp.json)
 
         // echo agha | ./opencga-admin.sh  users create -u hongyu.ma2@anu.edu.au --email hongyu.ma@anu.edu.au --name hongyu2 --user-password agha --password
 
@@ -166,14 +166,14 @@ class OpenCGAService {
 //        List createUserCommand = ['sh', '-c', script, 'users', 'create', '-u', userId, '--email', email, '--name', name, '--user-password', password]
 //        List createUserCommand = ['sh', '-c', script, userId, email, name]
 //        String std = CliExec.execCommand(createUserCommand)
-//        logger.info('std: '+std)
+//        logger.debug('std: '+std)
 //        // Password command
 //        String adminPassword = grailsApplication.config.opencga.password
 //        List passwordCommand = ['echo', adminPassword]
 //        def p = createUserCommand.execute()
         //def p = ['sh', '-c', script+' users create -u '+userId+' --email '+email+' --name '+name+' --user-password agha'].execute()
         //def std = p.waitFor()
-//        logger.info('std: '+p.text)
+//        logger.debug('std: '+p.text)
 
     }
 
@@ -250,7 +250,7 @@ class OpenCGAService {
         RestBuilder rest = new RestBuilder()
         RestResponse resp = rest.get(url)
 
-        logger.info('json='+resp.json)
+        logger.debug('json='+resp.json)
         return resp.json
     }
 
@@ -262,13 +262,13 @@ class OpenCGAService {
      * @return
      */
     def findProjectByStudyId(String sessionId, String studyId, String user) {
-        //logger.info('findProjectByStudyId: '+studyId+' user: '+user)
+        //logger.debug('findProjectByStudyId: '+studyId+' user: '+user)
         if (studyId) {
             List projects = accessibleUserProjects(sessionId, user)
-            //logger.info('projects: '+projects)
+            //logger.debug('projects: '+projects)
             for (def project : projects) {
                 for (def study : project.studies) {
-                    //logger.info('study.id='+study.id+' studyId='+studyId)
+                    //logger.debug('study.id='+study.id+' studyId='+studyId)
                     if (study.id == studyId?.toInteger()) {
                         return project
                     }
@@ -285,7 +285,7 @@ class OpenCGAService {
         RestBuilder rest = new RestBuilder()
         RestResponse resp = rest.get(url)
 
-        logger.info('json='+resp.json)
+        logger.debug('json='+resp.json)
         return resp.json
     }
 
@@ -311,7 +311,7 @@ class OpenCGAService {
             body(json.toString())
         }
 
-        logger.info('json='+resp.json)
+        logger.debug('json='+resp.json)
         return resp.json
 
 
@@ -363,7 +363,7 @@ class OpenCGAService {
 
 
     def studyCreate(String sessionId, String name, String projectId) {
-        logger.info('Creating study: '+name)
+        logger.debug('Creating study: '+name)
         String alias = name.replaceAll("\\s", "")
 
 
@@ -384,7 +384,7 @@ class OpenCGAService {
             body(json.toString())
         }
 
-        logger.info('json='+resp.json)
+        logger.debug('json='+resp.json)
         return resp.json
 
 
@@ -436,7 +436,7 @@ class OpenCGAService {
         RestBuilder rest = new RestBuilder()
         RestResponse resp = rest.get(url)
 
-        logger.info('json='+resp.json)
+        logger.debug('json='+resp.json)
 
         // Return a list of studies in JSON format
         return resp.json.response.get(0).result
@@ -455,7 +455,7 @@ class OpenCGAService {
         RestBuilder rest = new RestBuilder()
         RestResponse resp = rest.get(url)
 
-        logger.info('json='+resp.json)
+        logger.debug('json='+resp.json)
 
         return getJsonResult(resp.json).get(0)
     }
@@ -535,13 +535,13 @@ class OpenCGAService {
         RestBuilder rest = new RestBuilder()
         RestResponse resp = rest.get(url)
 
-        logger.info('studyFiles json='+resp.json)
+        logger.debug('studyFiles json='+resp.json)
 
         return getJsonResult(resp.json)
     }
 
     def studyAclCreate(String sessionId, String studyId, String members, String templateId) {
-        logger.info('studyAclCreate studyId:'+studyId+' members:'+members)
+        logger.debug('studyAclCreate studyId:'+studyId+' members:'+members)
         /*
         {"members":"jingjing.tan@anu.edu.au","templateId":"view_only"}
          */
@@ -562,7 +562,7 @@ class OpenCGAService {
 
     // get /{version}/studies/{study}/acl/{memberId}/delete
     def studyAclDelete(String sessionId, String studyId, String user) {
-        logger.info('delete ACL for studyId: '+studyId+ ' and user: '+user)
+        logger.debug('delete ACL for studyId: '+studyId+ ' and user: '+user)
         String url = buildOpencgaRestUrl('/studies/'+studyId+'/acl/'+user+'/delete?sid='+sessionId)
 
         RestBuilder rest = new RestBuilder()
@@ -579,12 +579,12 @@ class OpenCGAService {
      * @return
      */
     def fileDownload(String sessionId, String fileId, def httpResponse) {
-        logger.info('sessionId: '+sessionId+' fileId: '+fileId)
+        logger.debug('sessionId: '+sessionId+' fileId: '+fileId)
         String url = buildOpencgaRestUrl('/files/'+fileId+'/download?sid='+sessionId)
 
         //RestBuilder rest = new RestBuilder()
         //RestResponse resp = rest.get(url)
-        //logger.info('file download='+resp.text)
+        //logger.debug('file download='+resp.text)
 
         RequestCallback requestCallback = new RequestCallback() {
             void doWithRequest(ClientHttpRequest clientRequest) throws IOException {
@@ -621,9 +621,9 @@ class OpenCGAService {
     }
 
     def filesLink(String sessionId, File file, String studyId) {
-        logger.info('linking file: '+file+' to studyId '+studyId)
+        logger.debug('linking file: '+file+' to studyId '+studyId)
         String uri = 'file://'+file.absolutePath
-        String path = file.parentFile.absolutePath
+        String path = ( file.isFile() ) ? file.parentFile.absolutePath : file.absolutePath
         // Remove prefixed slash if present
         if (path.startsWith("/")) {
             path = path.substring(1)
@@ -634,7 +634,7 @@ class OpenCGAService {
         RestBuilder rest = new RestBuilder()
         RestResponse resp = rest.get(url)
 
-        //logger.info('resp.json='+resp.json)
+        //logger.debug('resp.json='+resp.json)
         return getJsonResult(resp.json).get(0)
     }
 
@@ -643,13 +643,13 @@ class OpenCGAService {
 
         def fileJson = filesLink(sessionId, file, studyId)
         String fileId = fileJson.id
-        logger.info('linkFileAndIndex fileId: '+fileId)
+        logger.debug('linkFileAndIndex fileId: '+fileId)
         // Index and analyze file only if it's a variant
         if (fileJson.bioformat == 'VARIANT') {
             analysisVariantIndex(sessionId, [fileId])
         }
 
-        logger.info('END linkFileAndIndex')
+        logger.debug('END linkFileAndIndex')
         return fileJson
     }
 
@@ -699,7 +699,7 @@ class OpenCGAService {
     // /{version}/analysis/variant/index
     def analysisVariantIndex(String sessionId, List fileIds, Boolean annotate=Boolean.FALSE, Boolean calculateStats=Boolean.FALSE) {
 
-        logger.info('analysisVariantIndex')
+        logger.debug('analysisVariantIndex')
 
         String url = buildOpencgaRestUrl('/analysis/variant/index?sid='+sessionId)
         url += '&file='+fileIds.join(',')
@@ -707,18 +707,18 @@ class OpenCGAService {
         url += '&calculateStats='+calculateStats
         url += '&overwrite=true'
 
-        logger.info('url='+url)
+        logger.debug('url='+url)
         RestBuilder rest = new RestBuilder()
         RestResponse resp = rest.get(url)
 
-        //logger.info('resp.json='+resp.json)
+        //logger.debug('resp.json='+resp.json)
         return resp.json
     }
 
 
     def analysisVariantQuery(String sessionId, String studyId, String region) {
 
-        logger.info('analysisVariantQuery - region: '+region)
+        logger.debug('analysisVariantQuery - region: '+region)
 
         String url = buildOpencgaRestUrl('/analysis/variant/query?sid='+sessionId)
         url += '&studies='+studyId
@@ -732,7 +732,7 @@ class OpenCGAService {
 
 
     def cohortsCreate(String sessionId, String name, String studyId) {
-        logger.info('create cohort: '+name+' studyId='+studyId)
+        logger.debug('create cohort: '+name+' studyId='+studyId)
         String url = buildOpencgaRestUrl('/cohorts/create?sid='+sessionId)
         url += '&study='+studyId
 
@@ -745,14 +745,14 @@ class OpenCGAService {
             body(json.toString())
         }
 
-        logger.info('json response: '+resp.json)
+        logger.debug('json response: '+resp.json)
 
         return resp.json
     }
 
     def cohortsInfo(String sessionId, String cohortId) {
 
-        logger.info('cohortId: '+cohortId)
+        logger.debug('cohortId: '+cohortId)
         String url = buildOpencgaRestUrl('/cohorts/'+cohortId+'/info?sid='+sessionId)
 
         RestBuilder rest = new RestBuilder()
@@ -768,20 +768,20 @@ class OpenCGAService {
      * @return
      */
     def cohortsSearch(String sessionId, String studyId) {
-        logger.info('cohort search: '+studyId)
+        logger.debug('cohort search: '+studyId)
         String url = buildOpencgaRestUrl('/cohorts/search?sid='+sessionId)
         url += '&study='+studyId
 
         RestBuilder rest = new RestBuilder()
         RestResponse resp = rest.get(url)
 
-        logger.info('resp.json='+resp.json)
+        logger.debug('resp.json='+resp.json)
         return getJsonResult(resp.json)
     }
 
     def cohortsUpdate(String sessionId, String cohortId, Collection sampleIds) {
 
-        logger.info('cohort update cohortId: '+cohortId+' sampleIds='+sampleIds)
+        logger.debug('cohort update cohortId: '+cohortId+' sampleIds='+sampleIds)
         String url = buildOpencgaRestUrl('/cohorts/'+cohortId+'/update?sid='+sessionId)
 
 
@@ -794,20 +794,20 @@ class OpenCGAService {
             body(json.toString())
         }
 
-        logger.info('json response: '+resp.json)
+        logger.debug('json response: '+resp.json)
 
         return getJsonResult(resp.json)
     }
 
     def cohortsSamples(String sessionId, String cohortId) {
 
-        logger.info('cohort samples: '+cohortId)
+        logger.debug('cohort samples: '+cohortId)
         String url = buildOpencgaRestUrl('/cohorts/'+cohortId+'/samples?sid='+sessionId)
 
         RestBuilder rest = new RestBuilder()
         RestResponse resp = rest.get(url)
 
-        logger.info('resp.json='+resp.json)
+        logger.debug('resp.json='+resp.json)
         return getJsonResult(resp.json)
     }
 
@@ -829,7 +829,7 @@ class OpenCGAService {
 
     def samplesSearch(String sessionId, String studyId, String name) {
 
-        logger.info('samples search name: '+name)
+        logger.debug('samples search name: '+name)
         String url = buildOpencgaRestUrl('/samples/search?sid='+sessionId)
         url += '&study='+studyId
         url += '&name='+name
@@ -837,14 +837,14 @@ class OpenCGAService {
         RestBuilder rest = new RestBuilder()
         RestResponse resp = rest.get(url)
 
-        logger.info('resp.json='+resp.json)
+        logger.debug('resp.json='+resp.json)
         return getJsonResult(resp.json)
 
     }
 
     def samplesCreate(String sessionId, String studyId, String name) {
 
-        logger.info('create sample: '+name+' studyId='+studyId)
+        logger.debug('create sample: '+name+' studyId='+studyId)
         String url = buildOpencgaRestUrl('/samples/create?sid='+sessionId)
         url += '&study='+studyId
 
@@ -857,7 +857,7 @@ class OpenCGAService {
             body(json.toString())
         }
 
-        logger.info('json response: '+resp.json)
+        logger.debug('json response: '+resp.json)
 
         return getJsonResult(resp.json).get(0)
 
@@ -866,7 +866,7 @@ class OpenCGAService {
     def searchOrCreateSample(String sessionId, studyId, sampleName) {
 
         def samples = samplesSearch(sessionId, studyId, sampleName)
-        logger.info('samples json='+samples)
+        logger.debug('samples json='+samples)
         String sampleId = samples?.get(0)?.id
 
         if (sampleId == null) {
@@ -885,17 +885,17 @@ class OpenCGAService {
         RestBuilder rest = new RestBuilder()
         RestResponse resp = rest.get(url)
 
-        logger.info('resp.json='+resp.json)
+        logger.debug('resp.json='+resp.json)
         return getJsonResult(resp.json).get(0)
 
     }
 
     def addFileToCohort(String sessionId, String cohortId, String studyId, File file, String fileId) {
 
-        logger.info(' addFileToCohort fileId: '+fileId+ ' cohortId: '+cohortId+ ' studyId: '+studyId+' file: '+file)
+        logger.debug(' addFileToCohort fileId: '+fileId+ ' cohortId: '+cohortId+ ' studyId: '+studyId+' file: '+file)
 
         def fileJson = this.fileInfo(sessionId, fileId)
-        logger.info('file format: '+fileJson.format)
+        logger.debug('file format: '+fileJson.format)
 
         // Create the samples associated with the file
         Set<String> sampleIds = new HashSet()
@@ -906,25 +906,25 @@ class OpenCGAService {
                 VCFFileReader vcfFileReader = new VCFFileReader(file, false)
                 VCFHeader vcfHeader = vcfFileReader.getFileHeader()
                 Set<String> sampleNames = vcfHeader.getGenotypeSamples() as Set
-                logger.info('sampleNames: ' + sampleNames)
+                logger.debug('sampleNames: ' + sampleNames)
 
                 // Search for existing samples
                 for (String sampleName: sampleNames) {
                     String sampleId = searchOrCreateSample(sessionId, studyId, sampleName)
-                    logger.info(sampleId)
+                    logger.debug(sampleId)
                     sampleIds << sampleId
                 }
             } else if (fileJson.format == 'BAM') {
-                logger.info('reading BAM file')
+                logger.debug('reading BAM file')
                 // Process BAM
                 BAMFileReader bamReader = new BAMFileReader(file, null, false, false, ValidationStringency.SILENT, DefaultSAMRecordFactory.getInstance())
                 SAMFileHeader samFileHeader = bamReader.getFileHeader()
-                logger.info('attributes: '+samFileHeader.attributes)
+                logger.debug('attributes: '+samFileHeader.attributes)
                 List<SAMReadGroupRecord> readGroups = samFileHeader.readGroups
                 if (readGroups) {
                     SAMReadGroupRecord readGroup = readGroups.get(0)
                     String sampleName = readGroup.getSample()
-                    logger.info('sampleName: '+sampleName)
+                    logger.debug('sampleName: '+sampleName)
                     if (sampleName) {
                         String sampleId = searchOrCreateSample(sessionId, studyId, sampleName)
                         sampleIds << sampleId

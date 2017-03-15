@@ -49,8 +49,8 @@ class StudyController {
 
         def cohorts = openCGAService.cohortsSearch(sessionId, studyId)
 
-        List cohortAllFiles = getCohortAllFiles(sessionId, studyFiles, cohorts)
-
+        List filterStudyFiles = filterStudyFiles(sessionId, studyFiles, cohorts)
+        //logger.info('filterStudyFiles: '+filterStudyFiles)
 
         // Does this study have files?
         Boolean hasFiles = Boolean.FALSE
@@ -78,43 +78,38 @@ class StudyController {
         }
 
 
-        [study: studyInfo, project: project, cohorts: cohorts, files: cohortAllFiles, hasFiles: hasFiles, canShare: canShare]
+        [study: studyInfo, project: project, cohorts: cohorts, files: filterStudyFiles, hasFiles: hasFiles, canShare: canShare]
 
     }
 
-    private List getCohortAllFiles(String sessionId, def studyFiles, def cohorts) {
+    /**
+     * Only include files that do not belong to a cohort
+     * @param sessionId
+     * @param studyFiles
+     * @param cohorts
+     * @return
+     */
+    private List filterStudyFiles(String sessionId, def studyFiles, def cohorts) {
 
-        // Find cohort ALL
-        def cohortAll = null
+        Set cohortSampleIds = new HashSet()
+
+
         for (def cohort: cohorts) {
-            if (cohort.name=='ALL') {
-                cohortAll = cohort
-                break
+            if (cohort.samples) {
+                cohortSampleIds.addAll(cohort.samples)
             }
         }
-        logger.info('cohortAll:'+cohortAll)
+        logger.info('sampleIds: '+cohortSampleIds)
 
-        Set cohortAllSampleIds = new HashSet()
-        if (cohortAll) {
-            // For cohort ALL, find all the samples
-            def samples = openCGAService.cohortsSamples(sessionId,cohortAll.id.toString())
-            for (def sample: samples) {
-                cohortAllSampleIds << sample.id
-            }
-        }
+        List filterStudyFiles = []
 
-        // Cohort ALL files
-        List cohortAllFiles = []
         for (def studyFile: studyFiles) {
-
-            for (def sampleId: studyFile.sampleIds) {
-                if (cohortAllSampleIds.contains(sampleId)) {
-                    cohortAllFiles << studyFile
-                }
+            if (! cohortSampleIds.intersect(studyFile.sampleIds)) {
+                filterStudyFiles << studyFile
             }
         }
 
-        return cohortAllFiles
+        return filterStudyFiles
     }
 
     /**

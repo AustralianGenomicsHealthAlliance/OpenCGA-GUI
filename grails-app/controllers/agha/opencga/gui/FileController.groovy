@@ -25,6 +25,28 @@ class FileController {
     //def grailsApplication
     OpenCGAService openCGAService
 
+    /**
+     * Prepare opencga for uploading.
+     * Called before the actual uploading starts.
+     */
+    def fineuploaderPrep() {
+        // Create the directories
+        logger.info('===== fineuploader prep ====')
+        logger.info('studyId: '+params.studyId)
+        logger.info('cohortId: '+params.cohortId)
+        logger.info('name: '+params.name)
+
+        File destFolder = createProjectStudyFolder(params.studyId)
+        String sessionId = openCGAService.loginCurrentUser()
+        def filesJson = openCGAService.filesLink(sessionId, destFolder, params.studyId)
+        logger.info('filesJson='+filesJson)
+
+
+        JSONObject json = new JSONObject()
+        json.put('success', Boolean.TRUE)
+        render(status: HttpStatus.OK, contentType: 'application/json', text: json.toString())
+    }
+
     def fineuploader() {
         logger.info('====== fineuploader =====')
         logger.info('qquuid:'+params.qquuid)

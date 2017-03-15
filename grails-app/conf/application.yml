@@ -53,8 +53,8 @@ environments:
         opencga.password: 'agha'
         opencga.agha.user: 'agha'
         opencga.bin: '/opt/opencga/bin'
-        datastore.path: '/mnt/opencga/datastore'
-        datastore.tmp.path: '/mnt/opencga/datastore/tmp'
+        datastore.path: '/mnt2/opencga/datastore'
+        datastore.tmp.path: '/mnt2/opencga/datastore/tmp'
     production:
 
 

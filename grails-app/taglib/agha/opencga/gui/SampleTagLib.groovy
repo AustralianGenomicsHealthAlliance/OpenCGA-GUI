@@ -9,9 +9,25 @@ class SampleTagLib {
 
     def sampleName = { attrs, body ->
         if (attrs.sampleId) {
-            String sessionId = openCGAService.loginCurrentUser()
-            def sampleInfo = openCGAService.samplesInfo(sessionId, attrs.sampleId)
-            out << sampleInfo.name?.encodeAsHTML()
+
+            // initialize request cache
+            if (request.sampleCacheMap == null) {
+                request.sampleCacheMap = [:]
+            }
+
+            // Check cache
+            String cachedSampleName = request.sampleCacheMap.get(attrs.sampleId)
+            if (cachedSampleName) {
+                out << cachedSampleName
+            } else {
+
+                String sessionId = openCGAService.loginCurrentUser()
+                def sampleInfo = openCGAService.samplesInfo(sessionId, attrs.sampleId)
+                String sampleName = sampleInfo.name?.encodeAsHTML()
+                // Update cache
+                request.sampleCacheMap.put(attrs.sampleId, sampleName)
+                out << sampleName
+            }
 
         }
     }

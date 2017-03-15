@@ -251,6 +251,11 @@
                     } else {
                         alert('Failed to upload the following files: '+ failed);
                     }
+                },
+                onSubmit: function(id, name) {
+                    console.log('onSubmit');
+
+                    $.post("${createLink(controller:'file', action:'fineuploaderPrep', params:[studyId: studyId])}")
                 }
             }
         });

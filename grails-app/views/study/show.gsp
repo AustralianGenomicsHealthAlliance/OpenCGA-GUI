@@ -300,10 +300,13 @@
                         </g:each>
                     </table>
                 </g:if>
+                <g:else>
+                    No cohorts
+                </g:else>
             </fieldset>
 
             <fieldset>
-                <legend>Files</legend>
+                <legend>Study Files</legend>
 
                 <g:if test="${hasFiles}">
                     <table>
@@ -413,6 +416,11 @@
                     } else {
                         alert('Failed to upload the following files: '+ failed);
                     }
+                },
+                onSubmit: function(id, name) {
+                    console.log('onSubmit');
+
+                    $.post("${createLink(controller:'file', action:'fineuploaderPrep', params:[studyId: study.id])}")
                 }
             }
         });
