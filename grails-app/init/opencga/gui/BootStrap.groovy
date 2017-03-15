@@ -53,7 +53,10 @@ class BootStrap {
     def initAdmin() {
         userService.createUser('philip.wu@anu.edu.au', 'philip.wu@anu.edu.au', 'agha', RoleType.ADMIN)
         userService.createUser('dan.andrews@anu.edu.au', 'dan.andrews@anu.edu.au', 'agha', RoleType.ADMIN)
+        userService.createUser('jingjing.tan@anu.edu.au', 'jingjing.tan@anu.edu.au', 'agha', RoleType.ADMIN)
         userService.createUser('hongyu.ma@anu.edu.au', 'hongyu.ma@anu.edu.au', 'agha', RoleType.ADMIN)
+        userService.createUser('sean.li@anu.edu.au', 'sean.li@anu.edu.au', 'agha', RoleType.ADMIN)
+        userService.createUser('aaron.chuah@anu.edu.au', 'aaron.chuah@anu.edu.au', 'agha', RoleType.ADMIN)
     }
 
     def initSecurityRoles() {
