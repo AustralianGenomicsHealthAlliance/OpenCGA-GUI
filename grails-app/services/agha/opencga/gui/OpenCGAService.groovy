@@ -866,8 +866,11 @@ class OpenCGAService {
     def searchOrCreateSample(String sessionId, studyId, sampleName) {
 
         def samples = samplesSearch(sessionId, studyId, sampleName)
-        logger.debug('samples json='+samples)
-        String sampleId = samples?.get(0)?.id
+        logger.info('samples json='+samples)
+        String sampleId = null
+        if (samples) {
+            sampleId = samples?.get(0)?.id
+        }
 
         if (sampleId == null) {
             // Create the sample
@@ -930,6 +933,17 @@ class OpenCGAService {
                         sampleIds << sampleId
                     }
                 }
+            } else if (fileJson.format == 'FASTQ') {
+                logger.info('Creating sample for FASTQ: '+ file.name)
+
+                String sampleName = file.name
+                int endIndex = file.name.indexOf('.fastq')
+                if (endIndex > 0) {
+                    sampleName = file.name.substring(0, endIndex)
+                }
+
+                String sampleId = searchOrCreateSample(sessionId, studyId, sampleName)
+                sampleIds << sampleId
             }
 
             if (sampleIds) {

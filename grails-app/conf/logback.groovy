@@ -39,7 +39,7 @@ if (Environment.isDevelopmentMode() && targetDir != null) {
 else {
 
     appender("FULL_STACKTRACE", FileAppender) {
-        file = "${targetDir}/stacktrace.log"
+        file = "mnt/apache-tomcat-8.5.5/logs/stacktrace.log"
         append = true
         encoder(PatternLayoutEncoder) {
             pattern = "%level %logger - %msg%n"
@@ -48,5 +48,5 @@ else {
 
     logger("StackTrace", ERROR, ['FULL_STACKTRACE'], false)
     logger("agha", INFO, ['STDOUT'])
-    root(ERROR, ['FULL_STACKTRACE'])
+    root(ERROR, ['STDOUT', 'FULL_STACKTRACE'])
 }
